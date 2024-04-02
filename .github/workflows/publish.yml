@@ -1,0 +1,42 @@
+name: Publish
+
+on:
+  push:
+    branches:
+      - v5
+
+jobs:
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install Gulp
+        run: npm install -g gulp-cli
+
+      - name: Install other dependencies
+        run: npm install
+
+      - name: Create dist
+        run: gulp dist-pre
+
+      - name: Config npm
+        run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+        working-directory: build/dist
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN_MKV }}
+
+      - name: Publish
+        run: npm publish --tag next --access public
+        working-directory: build/dist

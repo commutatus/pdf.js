@@ -72,7 +72,7 @@ const COMMON_WEB_FILES = [
 ];
 const MOZCENTRAL_DIFF_FILE = "mozcentral.diff";
 
-const DIST_REPO_URL = "https://github.com/mozilla/pdfjs-dist";
+const DIST_REPO_URL = "https://github.com/commutatus/pdfjs-dist";
 
 const CONFIG_FILE = "pdfjs.config";
 const config = JSON.parse(fs.readFileSync(CONFIG_FILE).toString());
@@ -2146,13 +2146,10 @@ gulp.task(
 );
 
 function packageJson() {
-  const VERSION = getVersionJSON().version;
+  const VERSION = "5.0.0";
 
-  const DIST_NAME = "pdfjs-dist";
-  const DIST_DESCRIPTION = "Generic build of Mozilla's PDF.js library.";
-  const DIST_KEYWORDS = ["Mozilla", "pdf", "pdf.js"];
-  const DIST_HOMEPAGE = "http://mozilla.github.io/pdf.js/";
-  const DIST_BUGS_URL = "https://github.com/mozilla/pdf.js/issues";
+  const DIST_NAME = "@commutatus/pdfjs-dist";
+  const DIST_DESCRIPTION = "Experimental build of Mozilla's PDF.js library.";
   const DIST_LICENSE = "Apache-2.0";
 
   const npmManifest = {
@@ -2161,9 +2158,6 @@ function packageJson() {
     main: "build/pdf.mjs",
     types: "types/src/pdf.d.ts",
     description: DIST_DESCRIPTION,
-    keywords: DIST_KEYWORDS,
-    homepage: DIST_HOMEPAGE,
-    bugs: DIST_BUGS_URL,
     license: DIST_LICENSE,
     optionalDependencies: {
       canvas: "^2.11.2",
