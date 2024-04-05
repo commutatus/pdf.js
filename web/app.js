@@ -488,6 +488,16 @@ const PDFViewerApplication = {
           editorHighlightButton.hidden = false;
         }
 
+        const editorUnderlineButton = appConfig.toolbar?.editorUnderlineButton;
+        if (editorUnderlineButton && AppOptions.get("enableUnderlineEditor")) {
+          editorUnderlineButton.hidden = false;
+        }
+
+        const editorStrikeoutButton = appConfig.toolbar?.editorStrikeoutButton;
+        if (editorStrikeoutButton && AppOptions.get("enableStrikeoutEditor")) {
+          editorStrikeoutButton.hidden = false;
+        }
+
         this.annotationEditorParams = new AnnotationEditorParams(
           appConfig.annotationEditorParams,
           eventBus

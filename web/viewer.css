@@ -913,7 +913,9 @@ body {
   mask-image: var(--toolbarButton-editorFreeText-icon);
 }
 
-#editorHighlight::before {
+#editorHighlight::before,
+#editorUnderline::before,
+#editorStrikeout::before {
   mask-image: var(--toolbarButton-editorHighlight-icon);
 }
 

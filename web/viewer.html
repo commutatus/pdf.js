@@ -179,6 +179,22 @@ See https://github.com/adobe-type-tools/cmap-resources
           </div>
         </div>
 
+        <div class="editorParamsToolbar hidden doorHangerRight" id="editorUnderlineParamsToolbar">
+          <div id="underlineParamsToolbarContainer" class="editorParamsToolbarContainer">
+            <div id="editorUnderlineColorPicker" class="colorPicker">
+              <span id="underlineColorPickerLabel" class="editorParamsLabel" data-l10n-id="pdfjs-editor-underline-colorpicker-label">Underline color</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="editorParamsToolbar hidden doorHangerRight" id="editorStrikeoutParamsToolbar">
+          <div id="strikeoutParamsToolbarContainer" class="editorParamsToolbarContainer">
+            <div id="editorStrikeoutColorPicker" class="colorPicker">
+              <span id="strikeoutColorPickerLabel" class="editorParamsLabel" data-l10n-id="pdfjs-editor-strikeout-colorpicker-label">Strikeout color</span>
+            </div>
+          </div>
+        </div>
+
         <div class="editorParamsToolbar hidden doorHangerRight" id="editorFreeTextParamsToolbar">
           <div class="editorParamsToolbarContainer">
             <div class="editorParamsSetter">
@@ -342,6 +358,12 @@ See https://github.com/adobe-type-tools/cmap-resources
               </div>
               <div id="toolbarViewerRight">
                 <div id="editorModeButtons" class="splitToolbarButton toggled" role="radiogroup">
+                  <button id="editorStrikeout" class="toolbarButton" hidden="true" disabled="disabled" title="Strikeout" role="radio" aria-checked="false" aria-controls="editorStrikeoutParamsToolbar" tabindex="31" data-l10n-id="pdfjs-editor-strikeout-button">
+                    <span data-l10n-id="pdfjs-editor-strikeout-button-label">Strikeout</span>
+                  </button>
+                  <button id="editorUnderline" class="toolbarButton" hidden="true" disabled="disabled" title="Underline" role="radio" aria-checked="false" aria-controls="editorUnderlineParamsToolbar" tabindex="31" data-l10n-id="pdfjs-editor-underline-button">
+                    <span data-l10n-id="pdfjs-editor-underline-button-label">Underline</span>
+                  </button>
                   <button id="editorHighlight" class="toolbarButton" hidden="true" disabled="disabled" title="Highlight" role="radio" aria-checked="false" aria-controls="editorHighlightParamsToolbar" tabindex="31" data-l10n-id="pdfjs-editor-highlight-button">
                     <span data-l10n-id="pdfjs-editor-highlight-button-label">Highlight</span>
                   </button>

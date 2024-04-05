@@ -84,6 +84,30 @@ class Toolbar {
         },
       },
       {
+        element: options.editorUnderlineButton,
+        eventName: "switchannotationeditormode",
+        eventDetails: {
+          get mode() {
+            const { classList } = options.editorUnderlineButton;
+            return classList.contains("toggled")
+              ? AnnotationEditorType.NONE
+              : AnnotationEditorType.UNDERLINE;
+          },
+        },
+      },
+      {
+        element: options.editorStrikeoutButton,
+        eventName: "switchannotationeditormode",
+        eventDetails: {
+          get mode() {
+            const { classList } = options.editorStrikeoutButton;
+            return classList.contains("toggled")
+              ? AnnotationEditorType.NONE
+              : AnnotationEditorType.STRIKEOUT;
+          },
+        },
+      },
+      {
         element: options.editorInkButton,
         eventName: "switchannotationeditormode",
         eventDetails: {
@@ -232,6 +256,10 @@ class Toolbar {
       editorFreeTextParamsToolbar,
       editorHighlightButton,
       editorHighlightParamsToolbar,
+      editorUnderlineButton,
+      editorUnderlineParamsToolbar,
+      editorStrikeoutButton,
+      editorStrikeoutParamsToolbar,
       editorInkButton,
       editorInkParamsToolbar,
       editorStampButton,
@@ -249,6 +277,16 @@ class Toolbar {
       editorHighlightParamsToolbar
     );
     toggleCheckedBtn(
+      editorUnderlineButton,
+      mode === AnnotationEditorType.UNDERLINE,
+      editorUnderlineParamsToolbar
+    );
+    toggleCheckedBtn(
+      editorStrikeoutButton,
+      mode === AnnotationEditorType.STRIKEOUT,
+      editorStrikeoutParamsToolbar
+    );
+    toggleCheckedBtn(
       editorInkButton,
       mode === AnnotationEditorType.INK,
       editorInkParamsToolbar
@@ -262,6 +300,8 @@ class Toolbar {
     const isDisable = mode === AnnotationEditorType.DISABLE;
     editorFreeTextButton.disabled = isDisable;
     editorHighlightButton.disabled = isDisable;
+    editorUnderlineButton.disabled = isDisable;
+    editorStrikeoutButton.disabled = isDisable;
     editorInkButton.disabled = isDisable;
     editorStampButton.disabled = isDisable;
   }

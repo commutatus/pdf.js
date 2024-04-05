@@ -35,7 +35,7 @@
       }
     }
 
-    &.highlight {
+    &.highlight, &.underline, &.strikeout {
       --blend-mode: multiply;
 
       @media screen and (forced-colors: active) {

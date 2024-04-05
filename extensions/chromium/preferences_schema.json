@@ -89,6 +89,22 @@
       "type": "string",
       "default": "yellow=#FFFF98,green=#53FFBC,blue=#80EBFF,pink=#FFCBE6,red=#FF4F5F"
     },
+    "enableUnderlineEditor": {
+      "type": "boolean",
+      "default": false
+    },
+    "underlineEditorColors": {
+      "type": "string",
+      "default": "yellow=#FFFF98,green=#53FFBC,blue=#80EBFF,pink=#FFCBE6,red=#FF4F5F"
+    },
+    "enableStrikeoutEditor": {
+      "type": "boolean",
+      "default": false
+    },
+    "strikeoutEditorColors": {
+      "type": "string",
+      "default": "yellow=#FFFF98,green=#53FFBC,blue=#80EBFF,pink=#FFCBE6,red=#FF4F5F"
+    },
     "disableRange": {
       "title": "Disable range requests",
       "description": "Whether to disable range requests (not recommended).",

@@ -20,6 +20,9 @@ class Outliner {
 
   #intervals = [];
 
+  // Used for underlines and strikethroughs/strikeouts
+  #lineRects = [];
+
   /**
    * Construct an outliner.
    * @param {Array<Object>} boxes - An array of axis-aligned rectangles.
@@ -37,6 +40,9 @@ class Outliner {
     let maxX = -Infinity;
     let minY = Infinity;
     let maxY = -Infinity;
+    // Group all lines by where the base of the line is,
+    // regardless of the font size
+    const lineByBaseHeight = {};
 
     // We round the coordinates to slightly reduce the number of edges in the
     // final outlines.
@@ -44,6 +50,7 @@ class Outliner {
     const EPSILON = 10 ** -NUMBER_OF_DIGITS;
 
     // The coordinates of the boxes are in the page coordinate system.
+    // Round off the coordinates and find the bounding rectangle
     for (const { x, y, width, height } of boxes) {
       const x1 = Math.floor((x - borderWidth) / EPSILON) * EPSILON;
       const x2 = Math.ceil((x + width + borderWidth) / EPSILON) * EPSILON;
@@ -57,8 +64,23 @@ class Outliner {
       maxX = Math.max(maxX, x2);
       minY = Math.min(minY, y1);
       maxY = Math.max(maxY, y2);
+
+      // Save points by baseline height
+      if (lineByBaseHeight[y2] === undefined) {
+        // TODO: Fix duplicate underlines/strikeouts
+        // which have slightly different y value but visually the same
+        lineByBaseHeight[y2] = { x1: Infinity, y1: Infinity, x2: -Infinity };
+      }
+
+      const prev = lineByBaseHeight[y2];
+      lineByBaseHeight[y2] = {
+        x1: Math.min(prev.x1, x1),
+        y1: Math.min(prev.y1, y1),
+        x2: Math.max(prev.x2, x2),
+      };
     }
 
+    // Create bounding rectangle
     const bboxWidth = maxX - minX + 2 * innerMargin;
     const bboxHeight = maxY - minY + 2 * innerMargin;
     const shiftedMinX = minX - innerMargin;
@@ -67,6 +89,7 @@ class Outliner {
     const lastPoint = [lastEdge[0], lastEdge[2]];
 
     // Convert the coordinates of the edges into box coordinates.
+    // These coordinates are now relative to the box and range from 0 to 1
     for (const edge of this.#verticalEdges) {
       const [x, y1, y2] = edge;
       edge[0] = (x - shiftedMinX) / bboxWidth;
@@ -81,11 +104,25 @@ class Outliner {
       height: bboxHeight,
       lastPoint,
     };
+
+    // Convert rect dict to list
+    this.#lineRects = Object.entries(lineByBaseHeight).map(
+      ([y2, { x1, y1, x2 }]) => {
+        // Convert these coordinates to be relative to
+        // the box and range from 0 to 1
+        return {
+          x1: (x1 - shiftedMinX) / bboxWidth,
+          x2: (x2 - shiftedMinX) / bboxWidth,
+          y1: (y1 - shiftedMinY) / bboxHeight,
+          y2: (y2 - shiftedMinY) / bboxHeight,
+        };
+      }
+    );
   }
 
   getOutlines() {
-    // We begin to sort lexicographically the vertical edges by their abscissa,
-    // and then by their ordinate.
+    // We begin to sort lexicographically the vertical edges by their abscissa
+    // (x coordinate), and then by their ordinate (y coordinate).
     this.#verticalEdges.sort(
       (a, b) => a[0] - b[0] || a[1] - b[1] || a[2] - b[2]
     );
@@ -111,6 +148,10 @@ class Outliner {
       }
     }
     return this.#getOutlines(outlineVerticalEdges);
+  }
+
+  getUnderlinesAndStrikeouts() {
+    return { box: this.#box, lineRects: this.#lineRects };
   }
 
   #getOutlines(outlineVerticalEdges) {

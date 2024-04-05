@@ -106,6 +106,62 @@ class DrawLayer {
     return { id, clipPathId: `url(#${clipPathId})` };
   }
 
+  underline({ lineRects, box }, color, opacity) {
+    const id = this.#id++;
+    const root = this.#createSVG(box);
+    root.classList.add("underline");
+    const strokeWidthPercent = 10;
+
+    for (const rect of lineRects) {
+      const line = DrawLayer._svgFactory.createElement("line");
+      root.append(line);
+
+      const { x1, y1, x2, y2 } = rect;
+      const rectHeight = y2 - y1;
+      const strokeWidth = rectHeight * strokeWidthPercent;
+      const upShift = rectHeight * 0.1;
+
+      line.setAttribute("x1", x1);
+      line.setAttribute("y1", y2 - upShift);
+      line.setAttribute("x2", x2);
+      line.setAttribute("y2", y2 - upShift);
+      line.setAttribute("stroke", color);
+      line.setAttribute("stroke-width", `${strokeWidth}%`);
+    }
+
+    this.#mapping.set(id, root);
+
+    return { id };
+  }
+
+  strikeout({ lineRects, box }, color, opacity) {
+    const id = this.#id++;
+    const root = this.#createSVG(box);
+    root.classList.add("strikeout");
+    const strokeWidthPercent = 10;
+
+    for (const rect of lineRects) {
+      const line = DrawLayer._svgFactory.createElement("line");
+      root.append(line);
+
+      const { x1, y1, x2, y2 } = rect;
+      const rectHeight = y2 - y1;
+      const strokeWidth = rectHeight * strokeWidthPercent;
+      const upShift = rectHeight * 0.4;
+
+      line.setAttribute("x1", x1);
+      line.setAttribute("y1", y2 - upShift);
+      line.setAttribute("x2", x2);
+      line.setAttribute("y2", y2 - upShift);
+      line.setAttribute("stroke", color);
+      line.setAttribute("stroke-width", `${strokeWidth}%`);
+    }
+
+    this.#mapping.set(id, root);
+
+    return { id };
+  }
+
   highlightOutline({ outlines, box }) {
     // We cannot draw the outline directly in the SVG for highlights because
     // it composes with its parent with mix-blend-mode: multiply.

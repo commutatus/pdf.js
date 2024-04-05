@@ -30,6 +30,8 @@ import { HighlightEditor } from "./highlight.js";
 import { InkEditor } from "./ink.js";
 import { setLayerDimensions } from "../display_utils.js";
 import { StampEditor } from "./stamp.js";
+import { StrikeoutEditor } from "./strikeout.js";
+import { UnderlineEditor } from "./underline.js";
 
 /**
  * @typedef {Object} AnnotationEditorLayerOptions
@@ -86,10 +88,14 @@ class AnnotationEditorLayer {
   static _initialized = false;
 
   static #editorTypes = new Map(
-    [FreeTextEditor, InkEditor, StampEditor, HighlightEditor].map(type => [
-      type._editorType,
-      type,
-    ])
+    [
+      FreeTextEditor,
+      InkEditor,
+      StampEditor,
+      HighlightEditor,
+      UnderlineEditor,
+      StrikeoutEditor,
+    ].map(type => [type._editorType, type])
   );
 
   /**
@@ -159,7 +165,9 @@ class AnnotationEditorLayer {
         this.togglePointerEvents(true);
         this.disableClick();
         break;
+      case AnnotationEditorType.UNDERLINE:
       case AnnotationEditorType.HIGHLIGHT:
+      case AnnotationEditorType.STRIKEOUT:
         this.enableTextSelection();
         this.togglePointerEvents(false);
         this.disableClick();
@@ -775,7 +783,13 @@ class AnnotationEditorLayer {
    * @param {PointerEvent} event
    */
   pointerdown(event) {
-    if (this.#uiManager.getMode() === AnnotationEditorType.HIGHLIGHT) {
+    if (
+      [
+        AnnotationEditorType.HIGHLIGHT,
+        AnnotationEditorType.UNDERLINE,
+        AnnotationEditorType.STRIKEOUT,
+      ].includes(this.#uiManager.getMode())
+    ) {
       this.enableTextSelection();
     }
     if (this.#hadPointerDown) {

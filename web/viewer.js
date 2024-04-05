@@ -64,6 +64,20 @@ function getViewerConfiguration() {
       editorHighlightColorPicker: document.getElementById(
         "editorHighlightColorPicker"
       ),
+      editorUnderlineButton: document.getElementById("editorUnderline"),
+      editorUnderlineParamsToolbar: document.getElementById(
+        "editorUnderlineParamsToolbar"
+      ),
+      editorUnderlineColorPicker: document.getElementById(
+        "editorUnderlineColorPicker"
+      ),
+      editorStrikeoutButton: document.getElementById("editorStrikeout"),
+      editorStrikeoutParamsToolbar: document.getElementById(
+        "editorStrikeoutParamsToolbar"
+      ),
+      editorStrikeoutColorPicker: document.getElementById(
+        "editorStrikeoutColorPicker"
+      ),
       editorInkButton: document.getElementById("editorInk"),
       editorInkParamsToolbar: document.getElementById("editorInkParamsToolbar"),
       editorStampButton: document.getElementById("editorStamp"),
