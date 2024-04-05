@@ -139,12 +139,20 @@ class UnderlineEditor extends AnnotationEditor {
     this.addCommands({
       cmd: () => {
         this.color = color;
-        this.parent.drawLayer.changeColor(this.#id, color);
+        this.parent.drawLayer.changeColor(
+          this.#id,
+          color,
+          UnderlineEditor._editorType
+        );
         this.#colorPicker?.updateColor(color);
       },
       undo: () => {
         this.color = savedColor;
-        this.parent.drawLayer.changeColor(this.#id, savedColor);
+        this.parent.drawLayer.changeColor(
+          this.#id,
+          savedColor,
+          UnderlineEditor._editorType
+        );
         this.#colorPicker?.updateColor(savedColor);
       },
       mustExec: true,
@@ -156,7 +164,6 @@ class UnderlineEditor extends AnnotationEditor {
 
   /** @inheritdoc */
   async addEditToolbar() {
-    console.log('adding underline color picker')
     const toolbar = await super.addEditToolbar();
     if (!toolbar) {
       return null;

@@ -139,12 +139,20 @@ class StrikeoutEditor extends AnnotationEditor {
     this.addCommands({
       cmd: () => {
         this.color = color;
-        this.parent.drawLayer.changeColor(this.#id, color);
+        this.parent.drawLayer.changeColor(
+          this.#id,
+          color,
+          StrikeoutEditor._editorType
+        );
         this.#colorPicker?.updateColor(color);
       },
       undo: () => {
         this.color = savedColor;
-        this.parent.drawLayer.changeColor(this.#id, savedColor);
+        this.parent.drawLayer.changeColor(
+          this.#id,
+          savedColor,
+          StrikeoutEditor._editorType
+        );
         this.#colorPicker?.updateColor(savedColor);
       },
       mustExec: true,

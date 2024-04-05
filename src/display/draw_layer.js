@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
+import { AnnotationEditorType, shadow } from "../shared/util.js";
 import { DOMSVGFactory } from "./display_utils.js";
-import { shadow } from "../shared/util.js";
 
 /**
  * Manage the SVGs drawn on top of the page canvas.
@@ -110,6 +110,7 @@ class DrawLayer {
     const id = this.#id++;
     const root = this.#createSVG(box);
     root.classList.add("underline");
+    root.style.color = color;
     const strokeWidthPercent = 10;
 
     for (const rect of lineRects) {
@@ -125,7 +126,7 @@ class DrawLayer {
       line.setAttribute("y1", y2 - upShift);
       line.setAttribute("x2", x2);
       line.setAttribute("y2", y2 - upShift);
-      line.setAttribute("stroke", color);
+      line.setAttribute("stroke", "currentColor");
       line.setAttribute("stroke-width", `${strokeWidth}%`);
     }
 
@@ -138,6 +139,7 @@ class DrawLayer {
     const id = this.#id++;
     const root = this.#createSVG(box);
     root.classList.add("strikeout");
+    root.style.color = color;
     const strokeWidthPercent = 10;
 
     for (const rect of lineRects) {
@@ -147,13 +149,13 @@ class DrawLayer {
       const { x1, y1, x2, y2 } = rect;
       const rectHeight = y2 - y1;
       const strokeWidth = rectHeight * strokeWidthPercent;
-      const upShift = rectHeight * 0.4;
+      const upShift = rectHeight * 0.41;
 
       line.setAttribute("x1", x1);
       line.setAttribute("y1", y2 - upShift);
       line.setAttribute("x2", x2);
       line.setAttribute("y2", y2 - upShift);
-      line.setAttribute("stroke", color);
+      line.setAttribute("stroke", "currentColor");
       line.setAttribute("stroke-width", `${strokeWidth}%`);
     }
 
@@ -224,8 +226,17 @@ class DrawLayer {
     this.#mapping.get(id).setAttribute("data-main-rotation", angle);
   }
 
-  changeColor(id, color) {
-    this.#mapping.get(id).setAttribute("fill", color);
+  changeColor(id, color, annotationType) {
+    switch (annotationType) {
+      case AnnotationEditorType.UNDERLINE:
+      case AnnotationEditorType.STRIKEOUT:
+        this.#mapping.get(id).style.color = color;
+        break;
+
+      default:
+        this.#mapping.get(id).setAttribute("fill", color);
+        break;
+    }
   }
 
   changeOpacity(id, opacity) {
