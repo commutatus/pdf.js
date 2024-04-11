@@ -29,6 +29,7 @@ import { FreeTextEditor } from "./freetext.js";
 import { HighlightEditor } from "./highlight.js";
 import { InkEditor } from "./ink.js";
 import { setLayerDimensions } from "../display_utils.js";
+import { SquareEditor } from "./square.js";
 import { StampEditor } from "./stamp.js";
 import { StrikeoutEditor } from "./strikeout.js";
 import { UnderlineEditor } from "./underline.js";
@@ -91,6 +92,7 @@ class AnnotationEditorLayer {
     [
       FreeTextEditor,
       InkEditor,
+      SquareEditor,
       StampEditor,
       HighlightEditor,
       UnderlineEditor,
@@ -165,6 +167,14 @@ class AnnotationEditorLayer {
         this.togglePointerEvents(true);
         this.disableClick();
         break;
+      case AnnotationEditorType.SQUARE:
+        // We always want to have a square editor ready to draw in.
+        this.addSquareEditorIfNeeded(false);
+
+        this.disableTextSelection();
+        this.togglePointerEvents(true);
+        this.disableClick();
+        break;
       case AnnotationEditorType.UNDERLINE:
       case AnnotationEditorType.HIGHLIGHT:
       case AnnotationEditorType.STRIKEOUT:
@@ -190,12 +200,7 @@ class AnnotationEditorLayer {
     }
   }
 
-  addInkEditorIfNeeded(isCommitting) {
-    if (this.#uiManager.getMode() !== AnnotationEditorType.INK) {
-      // We don't want to add an ink editor if we're not in ink mode!
-      return;
-    }
-
+  #addEditorIfNeeded(isCommitting) {
     if (!isCommitting) {
       // We're removing an editor but an empty one can already exist so in this
       // case we don't need to create a new one.
@@ -212,6 +217,24 @@ class AnnotationEditorLayer {
       /* isCentered = */ false
     );
     editor.setInBackground();
+  }
+
+  addInkEditorIfNeeded(isCommitting) {
+    if (this.#uiManager.getMode() !== AnnotationEditorType.INK) {
+      // We don't want to add an ink editor if we're not in ink mode!
+      return;
+    }
+
+    this.#addEditorIfNeeded(isCommitting);
+  }
+
+  addSquareEditorIfNeeded(isCommitting) {
+    if (this.#uiManager.getMode() !== AnnotationEditorType.SQUARE) {
+      // We don't want to add a square editor if we're not in square mode!
+      return;
+    }
+
+    this.#addEditorIfNeeded(isCommitting);
   }
 
   /**

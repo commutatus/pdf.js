@@ -31,6 +31,8 @@ class AnnotationEditorParams {
     editorInkColor,
     editorInkThickness,
     editorInkOpacity,
+    editorSquareColor,
+    editorSquareOpacity,
     editorStampAddImage,
   }) {
     const dispatchEvent = (typeStr, value) => {
@@ -55,6 +57,12 @@ class AnnotationEditorParams {
     editorInkOpacity.addEventListener("input", function () {
       dispatchEvent("INK_OPACITY", this.valueAsNumber);
     });
+    editorSquareColor.addEventListener("input", function () {
+      dispatchEvent("SQUARE_COLOR", this.value);
+    });
+    editorSquareOpacity.addEventListener("input", function () {
+      dispatchEvent("SQUARE_OPACITY", this.valueAsNumber);
+    });
     editorStampAddImage.addEventListener("click", () => {
       dispatchEvent("CREATE");
     });
@@ -76,6 +84,12 @@ class AnnotationEditorParams {
             break;
           case AnnotationEditorParamsType.INK_OPACITY:
             editorInkOpacity.value = value;
+            break;
+          case AnnotationEditorParamsType.SQUARE_COLOR:
+            editorSquareColor.value = value;
+            break;
+          case AnnotationEditorParamsType.SQUARE_OPACITY:
+            editorSquareOpacity.value = value;
             break;
         }
       }

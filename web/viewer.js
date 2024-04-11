@@ -80,6 +80,10 @@ function getViewerConfiguration() {
       ),
       editorInkButton: document.getElementById("editorInk"),
       editorInkParamsToolbar: document.getElementById("editorInkParamsToolbar"),
+      editorSquareButton: document.getElementById("editorSquare"),
+      editorSquareParamsToolbar: document.getElementById(
+        "editorSquareParamsToolbar"
+      ),
       editorStampButton: document.getElementById("editorStamp"),
       editorStampParamsToolbar: document.getElementById(
         "editorStampParamsToolbar"
@@ -185,6 +189,8 @@ function getViewerConfiguration() {
       editorInkColor: document.getElementById("editorInkColor"),
       editorInkThickness: document.getElementById("editorInkThickness"),
       editorInkOpacity: document.getElementById("editorInkOpacity"),
+      editorSquareColor: document.getElementById("editorSquareColor"),
+      editorSquareOpacity: document.getElementById("editorSquareOpacity"),
       editorStampAddImage: document.getElementById("editorStampAddImage"),
     },
     printContainer: document.getElementById("printContainer"),

@@ -72,6 +72,7 @@ const AnnotationEditorType = {
   DISABLE: -1,
   NONE: 0,
   FREETEXT: 3,
+  SQUARE: 5,
   HIGHLIGHT: 9,
   UNDERLINE: 10,
   STRIKEOUT: 12,
@@ -90,6 +91,8 @@ const AnnotationEditorParamsType = {
   INK_OPACITY: 23,
   HIGHLIGHT_COLOR: 31,
   HIGHLIGHT_DEFAULT_COLOR: 32,
+  SQUARE_COLOR: 41,
+  SQUARE_OPACITY: 42,
 };
 
 // Permission flags from Table 22, Section 7.6.3.2 of the PDF specification.
@@ -426,7 +429,7 @@ function createValidAbsoluteUrl(url, baseUrl = null, options = null) {
       if (options.tryConvertEncoding) {
         try {
           url = stringToUTF8String(url);
-        } catch {}
+        } catch { }
       }
     }
 
@@ -948,7 +951,7 @@ function stringToPDFString(str) {
     const charCode = str.charCodeAt(i);
     if (charCode === 0x1b) {
       // eslint-disable-next-line no-empty
-      while (++i < ii && str.charCodeAt(i) !== 0x1b) {}
+      while (++i < ii && str.charCodeAt(i) !== 0x1b) { }
       continue;
     }
     const code = PDFStringTranslateTable[charCode];

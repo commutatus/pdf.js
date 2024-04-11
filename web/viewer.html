@@ -171,6 +171,20 @@ See https://github.com/adobe-type-tools/cmap-resources
           </div>
         </div>  <!-- findbar -->
 
+
+        <div class="editorParamsToolbar hidden doorHangerRight" id="editorSquareParamsToolbar">
+          <div class="editorParamsToolbarContainer">
+            <div class="editorParamsSetter">
+              <label for="editorSquareColor" class="editorParamsLabel" data-l10n-id="pdfjs-editor-square-color-input">Color</label>
+              <input type="color" id="editorSquareColor" class="editorParamsColor" tabindex="104">
+            </div>
+            <div class="editorParamsSetter">
+              <label for="editorSquareOpacity" class="editorParamsLabel" data-l10n-id="pdfjs-editor-square-opacity-input">Opacity</label>
+              <input type="range" id="editorSquareOpacity" class="editorParamsSlider" value="100" min="1" max="100" step="1" tabindex="106">
+            </div>
+          </div>
+        </div>
+        
         <div class="editorParamsToolbar hidden doorHangerRight" id="editorHighlightParamsToolbar">
           <div id="highlightParamsToolbarContainer" class="editorParamsToolbarContainer">
             <div id="editorHighlightColorPicker" class="colorPicker">
@@ -372,6 +386,18 @@ See https://github.com/adobe-type-tools/cmap-resources
                   </button>
                   <button id="editorInk" class="toolbarButton" disabled="disabled" title="Draw" role="radio" aria-checked="false" aria-controls="editorInkParamsToolbar" tabindex="33" data-l10n-id="pdfjs-editor-ink-button">
                     <span data-l10n-id="pdfjs-editor-ink-button-label">Draw</span>
+                  </button>
+                  <button
+                    id="editorSquare"
+                    class="toolbarButton"
+                    disabled="disabled"
+                    title="Draw Square"
+                    role="radio"
+                    aria-checked="false"
+                    aria-controls="editorSquareParamsToolbar" tabindex="33"
+                    data-l10n-id="pdfjs-editor-square-button"
+                  >
+                    <span data-l10n-id="pdfjs-editor-square-button-label">Draw Square</span>
                   </button>
                   <button id="editorStamp" class="toolbarButton" disabled="disabled" title="Add or edit images" role="radio" aria-checked="false" aria-controls="editorStampParamsToolbar" tabindex="34" data-l10n-id="pdfjs-editor-stamp-button">
                     <span data-l10n-id="pdfjs-editor-stamp-button-label">Add or edit images</span>
