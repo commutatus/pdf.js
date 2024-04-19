@@ -184,7 +184,7 @@ See https://github.com/adobe-type-tools/cmap-resources
             </div>
           </div>
         </div>
-        
+
         <div class="editorParamsToolbar hidden doorHangerRight" id="editorHighlightParamsToolbar">
           <div id="highlightParamsToolbarContainer" class="editorParamsToolbarContainer">
             <div id="editorHighlightColorPicker" class="colorPicker">
@@ -218,6 +218,15 @@ See https://github.com/adobe-type-tools/cmap-resources
             <div class="editorParamsSetter">
               <label for="editorFreeTextFontSize" class="editorParamsLabel" data-l10n-id="pdfjs-editor-free-text-size-input">Size</label>
               <input type="range" id="editorFreeTextFontSize" class="editorParamsSlider" value="10" min="5" max="100" step="1" tabindex="103">
+            </div>
+          </div>
+        </div>
+
+        <div class="editorParamsToolbar hidden doorHangerRight" id="editorPopupParamsToolbar">
+          <div class="editorParamsToolbarContainer">
+            <div class="editorParamsSetter">
+              <label for="editorPopupColor" class="editorParamsLabel" data-l10n-id="pdfjs-editor-popup-color-input">Color</label>
+              <input type="color" id="editorPopupColor" class="editorParamsColor" tabindex="102">
             </div>
           </div>
         </div>
@@ -383,6 +392,9 @@ See https://github.com/adobe-type-tools/cmap-resources
                   </button>
                   <button id="editorFreeText" class="toolbarButton" disabled="disabled" title="Text" role="radio" aria-checked="false" aria-controls="editorFreeTextParamsToolbar" tabindex="32" data-l10n-id="pdfjs-editor-free-text-button">
                     <span data-l10n-id="pdfjs-editor-free-text-button-label">Text</span>
+                  </button>
+                  <button id="editorPopup" class="toolbarButton" disabled="disabled" title="Text" role="radio" aria-checked="false" aria-controls="editorPopupParamsToolbar" tabindex="32" data-l10n-id="pdfjs-editor-popup-button">
+                    <span data-l10n-id="pdfjs-editor-popup-button-label">Popup</span>
                   </button>
                   <button id="editorInk" class="toolbarButton" disabled="disabled" title="Draw" role="radio" aria-checked="false" aria-controls="editorInkParamsToolbar" tabindex="33" data-l10n-id="pdfjs-editor-ink-button">
                     <span data-l10n-id="pdfjs-editor-ink-button-label">Draw</span>

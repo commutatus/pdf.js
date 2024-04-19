@@ -76,6 +76,8 @@ class AnnotationEditor {
 
   _l10nPromise = null;
 
+  _wasDragged = false;
+
   #isDraggable = false;
 
   #zIndex = AnnotationEditor._zIndex++;
@@ -1037,6 +1039,7 @@ class AnnotationEditor {
     if (isSelected) {
       pointerMoveOptions = { passive: true, capture: true };
       pointerMoveCallback = e => {
+        this._wasDragged = true;
         const [tx, ty] = this.screenToPageTranslation(e.movementX, e.movementY);
         this._uiManager.dragSelectedEditors(tx, ty);
       };
@@ -1062,6 +1065,9 @@ class AnnotationEditor {
       if (!this._uiManager.endDragSession()) {
         this.#selectOnPointerEvent(event);
       }
+      // TODO: Check if there could be race conditions between
+      // multiple pointerup events?
+      this._wasDragged = false;
     };
     window.addEventListener("pointerup", pointerUpCallback);
     // If the user is using alt+tab during the dragging session, the pointerup

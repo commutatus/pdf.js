@@ -28,6 +28,7 @@ import { AnnotationEditor } from "./editor.js";
 import { FreeTextEditor } from "./freetext.js";
 import { HighlightEditor } from "./highlight.js";
 import { InkEditor } from "./ink.js";
+import { PopupEditor } from "./popup.js";
 import { setLayerDimensions } from "../display_utils.js";
 import { SquareEditor } from "./square.js";
 import { StampEditor } from "./stamp.js";
@@ -92,6 +93,7 @@ class AnnotationEditorLayer {
     [
       FreeTextEditor,
       InkEditor,
+      PopupEditor,
       SquareEditor,
       StampEditor,
       HighlightEditor,
