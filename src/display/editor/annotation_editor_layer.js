@@ -251,8 +251,8 @@ class AnnotationEditorLayer {
    * Add some commands into the CommandManager (undo/redo stuff).
    * @param {Object} params
    */
-  addCommands(params) {
-    this.#uiManager.addCommands(params);
+  addCommands(params, editor) {
+    this.#uiManager.addCommands(params, editor);
   }
 
   togglePointerEvents(enabled = false) {
@@ -524,7 +524,7 @@ class AnnotationEditorLayer {
       editor.remove();
     };
 
-    this.addCommands({ cmd, undo, mustExec: false });
+    this.addCommands({ cmd, undo, mustExec: false }, editor);
   }
 
   /**

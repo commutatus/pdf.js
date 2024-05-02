@@ -306,7 +306,7 @@ class AnnotationEditor {
    * @param {Object} params
    */
   addCommands(params) {
-    this._uiManager.addCommands(params);
+    this._uiManager.addCommands(params, this);
   }
 
   get currentLayer() {

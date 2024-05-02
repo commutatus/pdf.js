@@ -1535,7 +1535,6 @@ class AnnotationEditorUIManager {
    * Redo the last undoed command.
    */
   redo() {
-    this.#commandManager.redo();
     this.#dispatchUpdateStates({
       hasSomethingToUndo: true,
       hasSomethingToRedo: this.#commandManager.hasSomethingToRedo(),
@@ -1543,11 +1542,57 @@ class AnnotationEditorUIManager {
     });
   }
 
+  #bindChangeEmitter(params, editors) {
+    if (!editors) {
+      return;
+    }
+
+    const sendSerializedEditor = editor => {
+      this._eventBus.dispatch("com_annotationupdated", {
+        serialized: editor.serialize(),
+        id: editor.id,
+      });
+    };
+
+    const signalChange = () => {
+      if (Array.isArray(editors)) {
+        editors.forEach(e => sendSerializedEditor(e));
+      } else {
+        sendSerializedEditor(editors);
+      }
+    };
+
+    if (params.cmd) {
+      const originalFunction = params.cmd;
+      params.cmd = () => {
+        originalFunction();
+        signalChange();
+      };
+    }
+
+    if (params.undo) {
+      const originalFunction = params.undo;
+      params.undo = () => {
+        originalFunction();
+        signalChange();
+      };
+    }
+
+    // Changes are already done
+    if (!params.mustExec) {
+      signalChange();
+    }
+  }
+
   /**
    * Add a command to execute (cmd) and another one to undo it.
    * @param {Object} params
    */
-  addCommands(params) {
+  addCommands(params, editors) {
+    if (editors) {
+      this.#bindChangeEmitter(params, editors);
+    }
+
     this.#commandManager.add(params);
     this.#dispatchUpdateStates({
       hasSomethingToUndo: true,
@@ -1582,6 +1627,9 @@ class AnnotationEditorUIManager {
     const editors = [...this.#selectedEditors];
     const cmd = () => {
       for (const editor of editors) {
+        this._eventBus.dispatch("com_annotationdeleted", {
+          id: editor.id,
+        });
         editor.remove();
       }
     };
@@ -1771,19 +1819,23 @@ class AnnotationEditorUIManager {
       }
     };
 
-    this.addCommands({
-      cmd: () => {
-        for (const [editor, { newX, newY, newPageIndex }] of map) {
-          move(editor, newX, newY, newPageIndex);
-        }
+    const editors = Array.from(map.keys());
+    this.addCommands(
+      {
+        cmd: () => {
+          for (const [editor, { newX, newY, newPageIndex }] of map) {
+            move(editor, newX, newY, newPageIndex);
+          }
+        },
+        undo: () => {
+          for (const [editor, { savedX, savedY, savedPageIndex }] of map) {
+            move(editor, savedX, savedY, savedPageIndex);
+          }
+        },
+        mustExec: true,
       },
-      undo: () => {
-        for (const [editor, { savedX, savedY, savedPageIndex }] of map) {
-          move(editor, savedX, savedY, savedPageIndex);
-        }
-      },
-      mustExec: true,
-    });
+      editors
+    );
 
     return true;
   }
