@@ -191,13 +191,13 @@ class PopupEditor extends AnnotationEditor {
         this.#color =
           this.#largeNoteDiv.style.backgroundColor =
           this.#smallNoteDiv.style.color =
-          color;
+            color;
       },
       undo: () => {
         this.#color =
           this.#largeNoteDiv.style.backgroundColor =
           this.#smallNoteDiv.style.color =
-          savedColor;
+            savedColor;
       },
       mustExec: true,
       type: AnnotationEditorParamsType.POPUP_COLOR,
@@ -536,9 +536,17 @@ class PopupEditor extends AnnotationEditor {
 
     // Show dropdown on click
     actionButton.addEventListener("click", () => {
-      // TODO: Hide dropdown automatically
-
       dropdownMenu.classList.toggle("show");
+    });
+
+    // Hide dropdown on clicking outside
+    document.addEventListener("click", event => {
+      if (
+        !dropdownMenu.contains(event.target) &&
+        !actionButton.contains(event.target)
+      ) {
+        dropdownMenu.classList.remove("show");
+      }
     });
 
     actionButton.innerHTML =

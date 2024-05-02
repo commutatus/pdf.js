@@ -130,7 +130,7 @@
     height: 160px;
     display: none;
     border-radius: inherit;
-
+    
     &.show {
       display: block;
     }
@@ -142,10 +142,26 @@
 
     & .internal {
       padding: 0 12px 12px;
-      overflow: auto !important;
+      overflow-y: auto !important;
       width: calc(100% - 24px);
       height: calc(100% - var(--action-bar-height) - 12px);
       border-radius: inherit;
+      word-break: break-all;
+      scrollbar-width: thin;
+      scrollbar-color: var(--scrollbar-color) transparent; 
+    }
+
+    &.internal::-webkit-scrollbar-thumb {
+      background-color: var(--scrollbar-color);
+      border-radius: 10px;
+    }
+    
+    &.internal::-webkit-scrollbar-track {
+      background-color: transparent;
+    }
+    
+    &.internal::-webkit-scrollbar-button {
+      display: none; /* Hide the scrollbar buttons */
     }
 
     .sticky-note-action-button {
@@ -498,7 +514,7 @@
   border: none;
   inset: 0;
   overflow: visible;
-  white-space: nowrap;
+  white-space: pre-wrap;
   font: 10px sans-serif;
   line-height: var(--freetext-line-height);
   user-select: none;
