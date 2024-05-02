@@ -60,7 +60,7 @@ class PopupEditor extends AnnotationEditor {
 
   static _internalPadding = 0;
 
-  static _defaultColor = null;
+  static _defaultColor = "#98CDF6";
 
   static get _keyboardManager() {
     const proto = PopupEditor.prototype;
