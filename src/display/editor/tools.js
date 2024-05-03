@@ -1096,6 +1096,22 @@ class AnnotationEditorUIManager {
     }
   }
 
+  // TODO: Annotation editor layers are required to be rendered before
+  // this function is called. Change this requirement to make this process
+  // async
+  loadAnnotations({ annotationsList }) {
+    annotationsList.forEach(({ id, serialized: annotationData }) => {
+      const annotationEditorLayer = this.#allLayers.get(
+        annotationData.pageIndex
+      );
+
+      // Convert to editor
+      const editor = annotationEditorLayer.deserializeFromJSON(annotationData);
+      editor.apiId = id;
+      this.#addEditorToLayer(editor);
+    });
+  }
+
   /**
    * Update the different possible states of this manager, e.g. is there
    * something to undo, redo, ...
@@ -1548,9 +1564,18 @@ class AnnotationEditorUIManager {
     }
 
     const sendSerializedEditor = editor => {
+      if (!editor.serializeToJSON) {
+        return;
+      }
+
+      if (editor.ignoreNextChangeEvent) {
+        editor.ignoreNextChangeEvent = false;
+        return;
+      }
+
       this._eventBus.dispatch("com_annotationupdated", {
-        serialized: editor.serialize(),
-        id: editor.id,
+        serialized: editor.serializeToJSON(),
+        id: editor.apiId,
       });
     };
 
@@ -1628,7 +1653,7 @@ class AnnotationEditorUIManager {
     const cmd = () => {
       for (const editor of editors) {
         this._eventBus.dispatch("com_annotationdeleted", {
-          id: editor.id,
+          id: editor.apiId,
         });
         editor.remove();
       }

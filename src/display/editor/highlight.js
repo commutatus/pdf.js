@@ -16,6 +16,7 @@
 import {
   AnnotationEditorParamsType,
   AnnotationEditorType,
+  getUuid,
   Util,
 } from "../../shared/util.js";
 import { AnnotationEditor } from "./editor.js";
@@ -47,6 +48,10 @@ class HighlightEditor extends AnnotationEditor {
 
   #outlineId = null;
 
+  apiId = null;
+
+  ignoreNextChangeEvent = false;
+
   static _defaultColor = null;
 
   static _defaultOpacity = 1;
@@ -65,10 +70,13 @@ class HighlightEditor extends AnnotationEditor {
     this.#opacity = params.opacity || HighlightEditor._defaultOpacity;
     this.#boxes = params.boxes || null;
     this._isDraggable = false;
+    this.apiId = getUuid();
 
-    this.#createOutlines();
-    this.#addToDrawLayer();
-    this.rotate(this.rotation);
+    if (this.#boxes) {
+      this.#createOutlines();
+      this.#addToDrawLayer();
+      this.rotate(this.rotation);
+    }
   }
 
   #createOutlines() {
@@ -446,6 +454,45 @@ class HighlightEditor extends AnnotationEditor {
       rotation: 0,
       structTreeParentId: this._structTreeParentId,
     };
+  }
+
+  serializeToJSON() {
+    if (this.isEmpty()) {
+      return null;
+    }
+
+    const rect = this.getRect(0, 0);
+
+    return {
+      annotationType: AnnotationEditorType.HIGHLIGHT,
+      color: this.color,
+      opacity: this.#opacity,
+      boxes: this.#boxes,
+      pageIndex: this.pageIndex,
+      rect,
+      rotation: 0,
+      structTreeParentId: this._structTreeParentId,
+    };
+  }
+
+  static deserializeFromJSON(data, parent, uiManager) {
+    const editor = super.deserialize(data, parent, uiManager);
+
+    const { rect } = data;
+    editor.color = data.color;
+    editor.#opacity = data.opacity;
+
+    const [pageWidth, pageHeight] = editor.pageDimensions;
+    editor.width = (rect[2] - rect[0]) / pageWidth;
+    editor.height = (rect[3] - rect[1]) / pageHeight;
+    editor.#boxes = data.boxes;
+
+    editor.#createOutlines();
+    editor.#addToDrawLayer();
+    editor.rotate(editor.rotation);
+    editor.ignoreNextChangeEvent = true;
+
+    return editor;
   }
 
   static canCreateNewEmptyEditor() {

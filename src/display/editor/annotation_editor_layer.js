@@ -591,6 +591,14 @@ class AnnotationEditorLayer {
     );
   }
 
+  deserializeFromJSON(data) {
+    return (
+      AnnotationEditorLayer.#editorTypes
+        .get(data.annotationType ?? data.annotationEditorType)
+        ?.deserializeFromJSON(data, this, this.#uiManager) || null
+    );
+  }
+
   /**
    * Create and add a new editor.
    * @param {PointerEvent} event
