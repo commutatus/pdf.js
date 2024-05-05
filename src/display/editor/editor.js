@@ -22,7 +22,12 @@ import {
   ColorManager,
   KeyboardManager,
 } from "./tools.js";
-import { FeatureTest, shadow, unreachable } from "../../shared/util.js";
+import {
+  FeatureTest,
+  getUuid,
+  shadow,
+  unreachable,
+} from "../../shared/util.js";
 import { AltText } from "./alt_text.js";
 import { EditorToolbar } from "./toolbar.js";
 import { noContextMenu } from "../display_utils.js";
@@ -82,6 +87,8 @@ class AnnotationEditor {
 
   #zIndex = AnnotationEditor._zIndex++;
 
+  apiId = null;
+
   static _borderLineWidth = -1;
 
   static _colorManager = new ColorManager();
@@ -140,6 +147,7 @@ class AnnotationEditor {
     this._willKeepAspectRatio = false;
     this._initialOptions.isCentered = parameters.isCentered;
     this._structTreeParentId = null;
+    this.apiId = getUuid();
 
     const {
       rotation,
@@ -224,7 +232,7 @@ class AnnotationEditor {
    * @param {number} _type
    * @param {*} _value
    */
-  static updateDefaultParams(_type, _value) {}
+  static updateDefaultParams(_type, _value) { }
 
   /**
    * Get the default properties to set in the UI for this type of editor.
@@ -662,15 +670,15 @@ class AnnotationEditor {
     const classes = this._willKeepAspectRatio
       ? ["topLeft", "topRight", "bottomRight", "bottomLeft"]
       : [
-          "topLeft",
-          "topMiddle",
-          "topRight",
-          "middleRight",
-          "bottomRight",
-          "bottomMiddle",
-          "bottomLeft",
-          "middleLeft",
-        ];
+        "topLeft",
+        "topMiddle",
+        "topRight",
+        "middleRight",
+        "bottomRight",
+        "bottomMiddle",
+        "bottomLeft",
+        "middleLeft",
+      ];
     for (const name of classes) {
       const div = document.createElement("div");
       this.#resizersDiv.append(div);
@@ -1170,7 +1178,7 @@ class AnnotationEditor {
   /**
    * Executed once this editor has been rendered.
    */
-  onceAdded() {}
+  onceAdded() { }
 
   /**
    * Check if the editor contains something.
@@ -1233,7 +1241,7 @@ class AnnotationEditor {
    * Rotate the editor.
    * @param {number} angle
    */
-  rotate(_angle) {}
+  rotate(_angle) { }
 
   /**
    * Serialize the editor.
@@ -1498,24 +1506,24 @@ class AnnotationEditor {
    * @param {number} type
    * @param {*} value
    */
-  updateParams(type, value) {}
+  updateParams(type, value) { }
 
   /**
    * When the user disables the editing mode some editors can change some of
    * their properties.
    */
-  disableEditing() {}
+  disableEditing() { }
 
   /**
    * When the user enables the editing mode some editors can change some of
    * their properties.
    */
-  enableEditing() {}
+  enableEditing() { }
 
   /**
    * The editor is about to be edited.
    */
-  enterInEditMode() {}
+  enterInEditMode() { }
 
   /**
    * @returns {HTMLElement | null} the element requiring an alt text.

@@ -62,9 +62,11 @@ class StrikeoutEditor extends AnnotationEditor {
     this.#boxes = params.boxes || null;
     this._isDraggable = false;
 
-    this.#createStrikeouts();
-    this.#addToDrawLayer();
-    this.rotate(this.rotation);
+    if (this.#boxes) {
+      this.#createStrikeouts();
+      this.#addToDrawLayer();
+      this.rotate(this.rotation);
+    }
   }
 
   #createStrikeouts() {
@@ -398,7 +400,7 @@ class StrikeoutEditor extends AnnotationEditor {
     const color = AnnotationEditor._colorManager.convert(this.color);
 
     return {
-      annotationType: AnnotationEditorType.HIGHLIGHT,
+      annotationType: AnnotationEditorType.STRIKEOUT,
       color,
       opacity: this.#opacity,
       quadPoints: this.#serializeBoxes(),
@@ -407,6 +409,44 @@ class StrikeoutEditor extends AnnotationEditor {
       rotation: 0,
       structTreeParentId: this._structTreeParentId,
     };
+  }
+
+  serializeToJSON() {
+    if (this.isEmpty()) {
+      return null;
+    }
+
+    const rect = this.getRect(0, 0);
+
+    return {
+      annotationType: AnnotationEditorType.STRIKEOUT,
+      color: this.color,
+      opacity: this.#opacity,
+      boxes: this.#boxes,
+      pageIndex: this.pageIndex,
+      rect,
+      rotation: 0,
+    };
+  }
+
+  static deserializeFromJSON(data, parent, uiManager) {
+    const editor = super.deserialize(data, parent, uiManager);
+
+    const { rect } = data;
+    editor.color = data.color;
+    editor.#opacity = data.opacity;
+
+    const [pageWidth, pageHeight] = editor.pageDimensions;
+    editor.width = (rect[2] - rect[0]) / pageWidth;
+    editor.height = (rect[3] - rect[1]) / pageHeight;
+    editor.#boxes = data.boxes;
+
+    editor.#createStrikeouts();
+    editor.#addToDrawLayer();
+    editor.rotate(editor.rotation);
+    editor.ignoreNextChangeEvent = true;
+
+    return editor;
   }
 
   static canCreateNewEmptyEditor() {

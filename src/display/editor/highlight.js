@@ -16,7 +16,6 @@
 import {
   AnnotationEditorParamsType,
   AnnotationEditorType,
-  getUuid,
   Util,
 } from "../../shared/util.js";
 import { AnnotationEditor } from "./editor.js";
@@ -48,8 +47,6 @@ class HighlightEditor extends AnnotationEditor {
 
   #outlineId = null;
 
-  apiId = null;
-
   ignoreNextChangeEvent = false;
 
   static _defaultColor = null;
@@ -70,7 +67,6 @@ class HighlightEditor extends AnnotationEditor {
     this.#opacity = params.opacity || HighlightEditor._defaultOpacity;
     this.#boxes = params.boxes || null;
     this._isDraggable = false;
-    this.apiId = getUuid();
 
     if (this.#boxes) {
       this.#createOutlines();
