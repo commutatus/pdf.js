@@ -307,7 +307,7 @@ class PopupEditor extends AnnotationEditor {
 
   /** @inheritdoc */
   isEmpty() {
-    return !this.editorDiv || this.editorDiv.innerText.trim() === "";
+    return !this.editorDiv;
   }
 
   /** @inheritdoc */
