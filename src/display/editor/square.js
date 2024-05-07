@@ -279,6 +279,13 @@ class SquareEditor extends AnnotationEditor {
 
   /** @inheritdoc */
   onceAdded() {
+    if (this.loadedThroughApi) {
+      // If this is not set to true, fitToContent will not resize the canvas
+      // and drag events will not work
+      this.#disableEditing = true;
+      this.rebuild();
+    }
+
     this._isDraggable = !this.isEmpty();
   }
 
@@ -390,7 +397,8 @@ class SquareEditor extends AnnotationEditor {
       setRect(oldRect);
     };
 
-    this.addCommands({ cmd, undo, mustExec: true });
+    cmd();
+    return { cmd, undo };
   }
 
   #updateRect() {
@@ -551,7 +559,7 @@ class SquareEditor extends AnnotationEditor {
       this.canvas.removeEventListener("contextmenu", noContextMenu);
     }, 10);
 
-    this.#stopDrawing(event.offsetX, event.offsetY);
+    const { cmd, undo } = this.#stopDrawing(event.offsetX, event.offsetY);
 
     this.addToAnnotationStorage();
 
@@ -559,6 +567,10 @@ class SquareEditor extends AnnotationEditor {
     // to select another editor, we just put this one in the background.
     this.setInBackground();
     this.commit();
+
+    // TODO: Commands are being added after commit to make sure the correct
+    // getRect values get passed to the API. Find a better way to do it
+    this.addCommands({ cmd, undo, mustExec: false });
   }
 
   /**
@@ -635,12 +647,7 @@ class SquareEditor extends AnnotationEditor {
       // This editor was created in using copy (ctrl+c).
       const [parentWidth, parentHeight] = this.parentDimensions;
       this.setAspectRatio(this.width * parentWidth, this.height * parentHeight);
-      this.setAt(
-        baseX * parentWidth,
-        baseY * parentHeight,
-        this.width * parentWidth,
-        this.height * parentHeight
-      );
+      this.setAt(baseX * parentWidth, baseY * parentHeight, 0, 0);
       this.#isCanvasInitialized = true;
       this.#setCanvasDimensions();
       this.setDims(this.width * parentWidth, this.height * parentHeight);
@@ -758,7 +765,7 @@ class SquareEditor extends AnnotationEditor {
    * the bounding box of the contents.
    * @returns {undefined}
    */
-  #fitToContent(firstTime = false) {
+  #fitToContent() {
     if (this.isEmpty()) {
       return;
     }
@@ -797,6 +804,32 @@ class SquareEditor extends AnnotationEditor {
       prevTranslationX - this.translationX,
       prevTranslationY - this.translationY
     );
+  }
+
+  #getSerializedRect() {
+    const [parentWidth, parentHeight] = this.parentDimensions;
+
+    const { startX, startY, endX, endY } = this.rect;
+
+    return {
+      startX: (startX || 0) / parentWidth,
+      startY: (startY || 0) / parentHeight,
+      endX: (endX || 0) / parentWidth,
+      endY: (endY || 0) / parentHeight,
+    };
+  }
+
+  #getDeserializedRect(serializedRect) {
+    const [parentWidth, parentHeight] = this.parentDimensions;
+
+    const { startX, startY, endX, endY } = serializedRect;
+
+    return {
+      startX: startX ? startX * parentWidth : 0,
+      startY: startY ? startY * parentHeight : 0,
+      endX: endX ? endX * parentWidth : 0,
+      endY: endY ? endY * parentHeight : 0,
+    };
   }
 
   /** @inheritdoc */
@@ -848,6 +881,40 @@ class SquareEditor extends AnnotationEditor {
       rotation: this.rotation,
       structTreeParentId: this._structTreeParentId,
     };
+  }
+
+  serializeToJSON() {
+    if (this.isEmpty()) {
+      return null;
+    }
+
+    const rect = this.getRect(0, 0);
+
+    return {
+      annotationType: AnnotationEditorType.SQUARE,
+      color: this.color,
+      opacity: this.opacity,
+      pageIndex: this.pageIndex,
+      rect,
+      drawRect: this.#getSerializedRect(),
+      rotation: this.rotation,
+      translationX: this.translationX,
+      translationY: this.translationY,
+    };
+  }
+
+  static deserializeFromJSON(data, parent, uiManager) {
+    const editor = super.deserialize(data, parent, uiManager);
+
+    editor.color = data.color;
+    editor.opacity = data.opacity || null;
+    editor.rect = editor.#getDeserializedRect(data.drawRect);
+    editor.translationX = data.translationX;
+    editor.translationY = data.translationY;
+
+    editor.loadedThroughApi = true;
+
+    return editor;
   }
 }
 

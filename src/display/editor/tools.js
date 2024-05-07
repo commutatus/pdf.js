@@ -1100,6 +1100,7 @@ class AnnotationEditorUIManager {
   // this function is called. Change this requirement to make this process
   // async
   loadAnnotations({ annotationsList }) {
+    const layersChanged = new Set();
     annotationsList.forEach(({ id, serialized: annotationData }) => {
       const annotationEditorLayer = this.#allLayers.get(
         annotationData.pageIndex
@@ -1109,6 +1110,12 @@ class AnnotationEditorUIManager {
       const editor = annotationEditorLayer.deserializeFromJSON(annotationData);
       editor.apiId = id;
       this.#addEditorToLayer(editor);
+      layersChanged.add(annotationEditorLayer);
+    });
+
+    // TODO: This is a hacky fix. Find better solution
+    layersChanged.forEach(layer => {
+      layer.afterAnnotationsLoaded();
     });
   }
 

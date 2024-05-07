@@ -34,6 +34,8 @@ import { FreeTextAnnotationElement } from "../annotation_layer.js";
  * Text editor in order to create a Popup annotation.
  */
 class PopupEditor extends AnnotationEditor {
+  #apiData = null;
+
   #boundEditorDivBlur = this.editorDivBlur.bind(this);
 
   #boundEditorDivFocus = this.editorDivFocus.bind(this);
@@ -53,6 +55,8 @@ class PopupEditor extends AnnotationEditor {
   #editorDivId = `${this.id}-editor`;
 
   #initialData = null;
+
+  #isCollapsed = false;
 
   #smallNoteDiv = null;
 
@@ -191,13 +195,13 @@ class PopupEditor extends AnnotationEditor {
         this.#color =
           this.#largeNoteDiv.style.backgroundColor =
           this.#smallNoteDiv.style.color =
-            color;
+          color;
       },
       undo: () => {
         this.#color =
           this.#largeNoteDiv.style.backgroundColor =
           this.#smallNoteDiv.style.color =
-            savedColor;
+          savedColor;
       },
       mustExec: true,
       type: AnnotationEditorParamsType.POPUP_COLOR,
@@ -292,6 +296,16 @@ class PopupEditor extends AnnotationEditor {
 
   /** @inheritdoc */
   onceAdded() {
+    if (this.loadedThroughApi) {
+      if (this.#apiData.collapsed && !this.#isCollapsed) {
+        // We don't want to send an event when we are loading the
+        // annotation from the API
+        this.toggleNoteAppearance(/* emitEvent= */ false);
+      }
+
+      return;
+    }
+
     if (this.width) {
       this.#cheatInitialRect();
       // The editor was created in using ctrl+c.
@@ -383,6 +397,7 @@ class PopupEditor extends AnnotationEditor {
       return;
     }
 
+    this.#setEditorDimensions();
     const setText = text => {
       this.#content = text;
       if (!text) {
@@ -402,7 +417,6 @@ class PopupEditor extends AnnotationEditor {
       },
       mustExec: false,
     });
-    this.#setEditorDimensions();
   }
 
   /** @inheritdoc */
@@ -492,9 +506,22 @@ class PopupEditor extends AnnotationEditor {
     }
   }
 
-  toggleNoteAppearance() {
-    this.#smallNoteDiv.classList.toggle("show");
-    this.#largeNoteDiv.classList.toggle("show");
+  toggleNoteAppearance(emitEvent = true) {
+    const toggleCommand = () => {
+      this.#isCollapsed = !this.#isCollapsed;
+      this.#smallNoteDiv.classList.toggle("show");
+      this.#largeNoteDiv.classList.toggle("show");
+    };
+
+    if (emitEvent) {
+      this.addCommands({
+        cmd: toggleCommand,
+        undo: toggleCommand,
+        mustExec: true,
+      });
+    } else {
+      toggleCommand();
+    }
   }
 
   createCollapsedNote() {
@@ -642,6 +669,9 @@ class PopupEditor extends AnnotationEditor {
             break;
         }
         this.setAt(posX * parentWidth, posY * parentHeight, tx, ty);
+      } else if (this.loadedThroughApi) {
+        // TODO: Confirm if this is the correct way to deal with shifts
+        this.setAt(baseX * parentWidth, baseY * parentHeight, 0, 0);
       } else {
         this.setAt(
           baseX * parentWidth,
@@ -771,6 +801,36 @@ class PopupEditor extends AnnotationEditor {
     serialized.id = this.annotationElementId;
 
     return serialized;
+  }
+
+  serializeToJSON() {
+    if (this.isEmpty()) {
+      return null;
+    }
+
+    const rect = this.getRect(0, 0);
+
+    return {
+      annotationType: AnnotationEditorType.POPUP,
+      color: this.#color,
+      text: this.#content,
+      pageIndex: this.pageIndex,
+      rect,
+      rotation: this.rotation,
+      collapsed: this.#isCollapsed,
+    };
+  }
+
+  static deserializeFromJSON(data, parent, uiManager) {
+    const editor = super.deserialize(data, parent, uiManager);
+
+    editor.#color = data.color;
+    editor.#content = data.text || null;
+
+    editor.loadedThroughApi = true;
+    editor.#apiData = data;
+
+    return editor;
   }
 
   #hasElementChanged(serialized) {

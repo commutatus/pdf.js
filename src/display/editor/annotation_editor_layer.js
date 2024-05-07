@@ -202,6 +202,15 @@ class AnnotationEditorLayer {
     }
   }
 
+  afterAnnotationsLoaded() {
+    this.#cleanup();
+    this.disableTextSelection();
+    this.togglePointerEvents(false);
+    this.disableClick();
+
+    this.div.hidden = false;
+  }
+
   #addEditorIfNeeded(isCommitting) {
     if (!isCommitting) {
       // We're removing an editor but an empty one can already exist so in this
