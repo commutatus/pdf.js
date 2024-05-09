@@ -93,7 +93,7 @@ class UnderlineEditor extends AnnotationEditor {
 
   static updateDefaultParams(type, value) {
     switch (type) {
-      case AnnotationEditorParamsType.HIGHLIGHT_DEFAULT_COLOR:
+      case AnnotationEditorParamsType.HIGHLIGHT_COLOR:
         UnderlineEditor._defaultColor = value;
         break;
     }
@@ -113,10 +113,16 @@ class UnderlineEditor extends AnnotationEditor {
     }
   }
 
+  get localParams() {
+    return {
+      [AnnotationEditorParamsType.HIGHLIGHT_COLOR]: this.color,
+    };
+  }
+
   static get defaultPropertiesToUpdate() {
     return [
       [
-        AnnotationEditorParamsType.HIGHLIGHT_DEFAULT_COLOR,
+        AnnotationEditorParamsType.HIGHLIGHT_COLOR,
         UnderlineEditor._defaultColor,
       ],
     ];
@@ -137,6 +143,10 @@ class UnderlineEditor extends AnnotationEditor {
    * @param {string} color
    */
   #updateColor(color) {
+    if (color === this.color) {
+      return;
+    }
+
     const savedColor = this.color;
     this.addCommands({
       cmd: () => {

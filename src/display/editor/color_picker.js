@@ -86,7 +86,7 @@ class ColorPicker {
 
   renderMainDropdown() {
     const dropdown = (this.#dropdown = this.#getDropdownRoot(
-      AnnotationEditorParamsType.HIGHLIGHT_DEFAULT_COLOR
+      AnnotationEditorParamsType.HIGHLIGHT_COLOR
     ));
     dropdown.setAttribute("aria-orientation", "horizontal");
     dropdown.setAttribute("aria-labelledby", "highlightColorPickerLabel");
@@ -132,6 +132,10 @@ class ColorPicker {
       source: this,
       type,
       value: color,
+    });
+    this.#eventBus.dispatch("com_updateglobalparams", {
+      source: this,
+      params: { [type]: color },
     });
   }
 

@@ -169,6 +169,12 @@ class PopupEditor extends AnnotationEditor {
     }
   }
 
+  get localParams() {
+    return {
+      [AnnotationEditorParamsType.POPUP_COLOR]: this.#color,
+    };
+  }
+
   /** @inheritdoc */
   static get defaultPropertiesToUpdate() {
     return [
@@ -189,19 +195,23 @@ class PopupEditor extends AnnotationEditor {
    * @param {string} color
    */
   #updateColor(color) {
+    if (color === this.#color) {
+      return;
+    }
+
     const savedColor = this.#color;
     this.addCommands({
       cmd: () => {
         this.#color =
           this.#largeNoteDiv.style.backgroundColor =
           this.#smallNoteDiv.style.color =
-          color;
+            color;
       },
       undo: () => {
         this.#color =
           this.#largeNoteDiv.style.backgroundColor =
           this.#smallNoteDiv.style.color =
-          savedColor;
+            savedColor;
       },
       mustExec: true,
       type: AnnotationEditorParamsType.POPUP_COLOR,

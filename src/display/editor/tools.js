@@ -1299,7 +1299,7 @@ class AnnotationEditorUIManager {
       case AnnotationEditorParamsType.CREATE:
         this.currentLayer.addNewEditor();
         return;
-      case AnnotationEditorParamsType.HIGHLIGHT_DEFAULT_COLOR:
+      case AnnotationEditorParamsType.HIGHLIGHT_COLOR:
         this.#mainHighlightColorPicker?.updateColor(value);
         break;
     }
@@ -1311,6 +1311,13 @@ class AnnotationEditorUIManager {
     for (const editorType of this.#editorTypes) {
       editorType.updateDefaultParams(type, value);
     }
+  }
+
+  updateGlobalParams(editor, mapping) {
+    this._eventBus.dispatch("com_updateglobalparams", {
+      source: editor,
+      params: mapping,
+    });
   }
 
   enableWaiting(mustWait = false) {

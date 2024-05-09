@@ -103,6 +103,13 @@ class SquareEditor extends AnnotationEditor {
     }
   }
 
+  get localParams() {
+    return {
+      [AnnotationEditorParamsType.SQUARE_COLOR]: this.color,
+      [AnnotationEditorParamsType.SQUARE_OPACITY]: this.opacity * 100,
+    };
+  }
+
   /** @inheritdoc */
   static get defaultPropertiesToUpdate() {
     return [
@@ -138,6 +145,10 @@ class SquareEditor extends AnnotationEditor {
    * @param {string} color
    */
   #updateColor(color) {
+    if (color === this.color) {
+      return;
+    }
+
     const savedColor = this.color;
     this.addCommands({
       cmd: () => {
@@ -161,6 +172,11 @@ class SquareEditor extends AnnotationEditor {
    */
   #updateOpacity(opacity) {
     opacity /= 100;
+
+    if (opacity === this.opacity) {
+      return;
+    }
+
     const savedOpacity = this.opacity;
     this.addCommands({
       cmd: () => {

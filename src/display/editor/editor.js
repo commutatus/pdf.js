@@ -1026,17 +1026,11 @@ class AnnotationEditor {
     this.#selectOnPointerEvent(event);
   }
 
-  #selectOnPointerEvent(event) {
-    const { isMac } = FeatureTest.platform;
-    if (
-      (event.ctrlKey && !isMac) ||
-      event.shiftKey ||
-      (event.metaKey && isMac)
-    ) {
-      this.parent.toggleSelected(this);
-    } else {
-      this.parent.setSelected(this);
-    }
+  // Note: Multi select is disabled
+  #selectOnPointerEvent() {
+    this.parent.setSelected(this);
+
+    this.updateGlobalParams();
   }
 
   #setUpDragSession(event) {
@@ -1524,6 +1518,15 @@ class AnnotationEditor {
    * The editor is about to be edited.
    */
   enterInEditMode() {}
+
+  get localParams() {
+    return {};
+  }
+
+  updateGlobalParams() {
+    const mapping = this.localParams;
+    this._uiManager.updateGlobalParams(this, mapping);
+  }
 
   /**
    * @returns {HTMLElement | null} the element requiring an alt text.
