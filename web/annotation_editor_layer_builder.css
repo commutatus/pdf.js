@@ -38,14 +38,14 @@
       var(--outline-around-width)
   );
   --editorFreeText-editing-cursor: text;
-  --editorPopup-editing-cursor: text;
+  --editorPopup-editing-cursor: crosshair;
   /*#if COMPONENTS*/
   --editorInk-editing-cursor: pointer;
-  --editorSquare-editing-cursor: pointer;
+  --editorSquare-editing-cursor: crosshair;
   /*#else*/
   --editorInk-editing-cursor: url(images/cursor-editorInk.svg) 0 16, pointer;
   --editorSquare-editing-cursor: url(images/cursor-editorSquare.svg) 25 25,
-    pointer;
+    crosshair;
   /*#endif*/
 }
 
@@ -174,21 +174,32 @@
     .sticky-note-actions-dropdown {
       position: absolute;
       width: max-content;
-      right: 0;
+      padding: 4px;
+      right: 8px;
       background: white;
-      border-radius: 8px;
+      border-radius: 6px;
       display: none;
       top: 24px;
-
+      box-shadow:
+        0 6px 16px 0 rgba(0, 0, 0, 0.08),
+        0 3px 6px -4px rgba(0, 0, 0, 0.12),
+        0 9px 28px 8px rgba(0, 0, 0, 0.05);
       &.show {
         display: block;
       }
     }
 
     .sticky-note-dropdown-option {
+      display: flex;
+      align-items: center;
+      gap: 6px;
       padding: 5px 12px;
-      font-size: 10px;
+      font-size: 14px;
+      color: rgba(0, 0, 0, 0.88);
       cursor: pointer;
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.04);
+      }
     }
   }
 
