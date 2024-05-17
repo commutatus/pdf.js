@@ -477,7 +477,7 @@ class HighlightEditor extends AnnotationEditor {
       pageIndex: this.pageIndex,
       rect,
       rotation: 0,
-      structTreeParentId: this._structTreeParentId,
+      text: this.selectedText || "",
     };
   }
 
@@ -492,6 +492,7 @@ class HighlightEditor extends AnnotationEditor {
     editor.width = (rect[2] - rect[0]) / pageWidth;
     editor.height = (rect[3] - rect[1]) / pageHeight;
     editor.#boxes = data.boxes;
+    editor.selectedText = data.text || "";
 
     editor.#createOutlines();
     editor.#addToDrawLayer();

@@ -778,6 +778,7 @@ class AnnotationEditorLayer {
     if (boxes.length !== 0) {
       this.#createAndAddNewEditor(event, false, {
         boxes,
+        text: selection.toString(),
       });
     }
     selection.empty();

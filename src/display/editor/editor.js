@@ -87,6 +87,8 @@ class AnnotationEditor {
 
   #zIndex = AnnotationEditor._zIndex++;
 
+  selectedText = null;
+
   apiId = null;
 
   static _borderLineWidth = -1;
@@ -148,6 +150,7 @@ class AnnotationEditor {
     this._initialOptions.isCentered = parameters.isCentered;
     this._structTreeParentId = null;
     this.apiId = getUuid();
+    this.selectedText = parameters.text;
 
     const {
       rotation,

@@ -436,6 +436,7 @@ class StrikeoutEditor extends AnnotationEditor {
       pageIndex: this.pageIndex,
       rect,
       rotation: 0,
+      text: this.selectedText || "",
     };
   }
 
@@ -450,6 +451,7 @@ class StrikeoutEditor extends AnnotationEditor {
     editor.width = (rect[2] - rect[0]) / pageWidth;
     editor.height = (rect[3] - rect[1]) / pageHeight;
     editor.#boxes = data.boxes;
+    editor.selectedText = data.text || "";
 
     editor.#createStrikeouts();
     editor.#addToDrawLayer();
