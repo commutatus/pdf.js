@@ -661,19 +661,6 @@ class AnnotationEditor {
     return [0, 0];
   }
 
-  #getResizerMidPoint(resizerName) {
-    const resizerDiv = Array.from(this.#resizersDiv.children).find(resizer => {
-      return resizer.classList.contains(resizerName);
-    });
-
-    const rect = resizerDiv.getBoundingClientRect();
-
-    const middleX = (rect.left + rect.right) / 2;
-    const middleY = (rect.top + rect.bottom) / 2;
-
-    return { middleX, middleY };
-  }
-
   #createResizers() {
     if (this.#resizersDiv) {
       return;
@@ -874,19 +861,10 @@ class AnnotationEditor {
     let ratioX = 1;
     let ratioY = 1;
 
-    // TODO: Fix vertical resizing
-    // TODO: Square maintaining aspect ratio. We don't want it
-    const { middleX, middleY } = this.#getResizerMidPoint(name);
-    let movementX = event.movementX;
-    let movementY = event.movementY;
-
-    // https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/movementX#:~:text=previousEvent.screenX.-,Warning,-%3A%20Browsers%20use
-    if (event.clientX) {
-      movementX = event.clientX - middleX;
-      movementY = event.clientY - middleY;
-    }
-
-    let [deltaX, deltaY] = this.screenToPageTranslation(movementX, movementY);
+    let [deltaX, deltaY] = this.screenToPageTranslation(
+      event.movementX,
+      event.movementY
+    );
     [deltaX, deltaY] = invTransf(deltaX / parentWidth, deltaY / parentHeight);
 
     if (isDiagonal) {
@@ -1545,14 +1523,12 @@ class AnnotationEditor {
   enterInEditMode() {}
 
   get localParams() {
-    return null;
+    return {};
   }
 
   updateGlobalParams() {
     const mapping = this.localParams;
-    if (mapping) {
-      this._uiManager.updateGlobalParams(this, mapping);
-    }
+    this._uiManager.updateGlobalParams(this, mapping);
   }
 
   /**
