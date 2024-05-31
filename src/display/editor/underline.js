@@ -70,7 +70,13 @@ class UnderlineEditor extends AnnotationEditor {
   }
 
   #createUnderlines() {
-    const outliner = new Outliner(this.#boxes, /* borderWidth = */ 0.001);
+    const outliner = new Outliner(
+      this.#boxes,
+      /* borderWidth = */ 0.001,
+      0,
+      true,
+      this
+    );
     this.#highlightUnderlines = outliner.getUnderlinesAndStrikeouts();
     ({
       x: this.x,

@@ -23,6 +23,8 @@ class Outliner {
   // Used for underlines and strikethroughs/strikeouts
   #lineRects = [];
 
+  parent = null;
+
   /**
    * Construct an outliner.
    * @param {Array<Object>} boxes - An array of axis-aligned rectangles.
@@ -35,14 +37,20 @@ class Outliner {
    * @param {boolean} isLTR - true if we're in LTR mode. It's used to determine
    *   the last point of the boxes.
    */
-  constructor(boxes, borderWidth = 0, innerMargin = 0, isLTR = true) {
+  constructor(
+    boxes,
+    borderWidth = 0,
+    innerMargin = 0,
+    isLTR = true,
+    parent = null
+  ) {
     let minX = Infinity;
     let maxX = -Infinity;
     let minY = Infinity;
     let maxY = -Infinity;
-    // Group all lines by where the base of the line is,
-    // regardless of the font size
-    const lineByBaseHeight = {};
+    // Group all lines by where the base of the line is
+    let lineByBaseHeight = {};
+    this.parent = parent;
 
     // We round the coordinates to slightly reduce the number of edges in the
     // final outlines.
@@ -69,15 +77,15 @@ class Outliner {
       if (lineByBaseHeight[y2] === undefined) {
         // TODO: Fix duplicate underlines/strikeouts
         // which have slightly different y value but visually the same
-        lineByBaseHeight[y2] = { x1: Infinity, y1: Infinity, x2: -Infinity };
+        lineByBaseHeight[y2] = {
+          boxes: [],
+          minY1: Infinity,
+        };
       }
 
       const prev = lineByBaseHeight[y2];
-      lineByBaseHeight[y2] = {
-        x1: Math.min(prev.x1, x1),
-        y1: Math.min(prev.y1, y1),
-        x2: Math.max(prev.x2, x2),
-      };
+      lineByBaseHeight[y2].boxes.push({ x1, y1, x2 });
+      lineByBaseHeight[y2].minY1 = Math.min(prev.minY1, y1);
     }
 
     // Create bounding rectangle
@@ -105,19 +113,87 @@ class Outliner {
       lastPoint,
     };
 
+    // Merge similar underlines with small y difference
+    const lineKeys = Object.keys(lineByBaseHeight);
+    if (this?.parent?.name === "underlineEditor" && lineKeys.length) {
+      const sortedYValues = Object.keys(lineByBaseHeight).sort(
+        (a, b) => +a - +b
+      );
+      const firstValue = sortedYValues[0];
+
+      const newLineByBaseHeight = {
+        [firstValue]: structuredClone(lineByBaseHeight[firstValue]),
+      };
+
+      for (let i = 1; i < sortedYValues.length; i++) {
+        const prevY2 = sortedYValues[i - 1];
+        const prevObj = newLineByBaseHeight[prevY2];
+
+        const currentY2 = sortedYValues[i];
+        const currentObj = structuredClone(lineByBaseHeight[currentY2]);
+
+        if (currentY2 >= prevY2 && prevObj.minY1 >= currentObj.minY1) {
+          newLineByBaseHeight[currentY2] = {
+            boxes: [...prevObj.boxes, ...currentObj.boxes],
+            minY1: Math.min(prevObj.minY1, currentObj.minY1),
+          };
+
+          delete newLineByBaseHeight[prevY2];
+        } else {
+          newLineByBaseHeight[currentY2] = currentObj;
+        }
+      }
+
+      lineByBaseHeight = newLineByBaseHeight;
+    }
+
+    // If the gap is too big we skip it
+    const partitionedLines = Object.entries(lineByBaseHeight).map(
+      ([y2, obj]) => {
+        const boxesSorted = obj.boxes.sort((a, b) => +a.x1 - +b.x1);
+        const averageHeight = y2 - obj.minY1;
+        const maxSpaceSize = averageHeight * 2;
+
+        const partitionedBoxes = [structuredClone(boxesSorted[0])];
+
+        for (let i = 1; i < boxesSorted.length; i++) {
+          const currentBox = boxesSorted[i];
+          const lastBox = partitionedBoxes.at(-1);
+
+          if (currentBox.x2 - lastBox.x2 > maxSpaceSize) {
+            partitionedBoxes.push(currentBox);
+            continue;
+          }
+
+          partitionedBoxes[partitionedBoxes.length - 1] = {
+            x1: Math.min(currentBox.x1, lastBox.x1),
+            y1: Math.min(currentBox.y1, lastBox.y1),
+            x2: Math.max(currentBox.x2, lastBox.x2),
+          };
+        }
+
+        return [y2, partitionedBoxes];
+      }
+    );
+
     // Convert rect dict to list
-    this.#lineRects = Object.entries(lineByBaseHeight).map(
-      ([y2, { x1, y1, x2 }]) => {
+    const lineRects = [];
+    partitionedLines.forEach(([y2, partitionedBoxes]) => {
+      partitionedBoxes.forEach(({ x1, y1, x2 }) => {
         // Convert these coordinates to be relative to
         // the box and range from 0 to 1
-        return {
+        const annotationBox = {
           x1: (x1 - shiftedMinX) / bboxWidth,
           x2: (x2 - shiftedMinX) / bboxWidth,
           y1: (y1 - shiftedMinY) / bboxHeight,
           y2: (y2 - shiftedMinY) / bboxHeight,
         };
-      }
-    );
+
+        lineRects.push(annotationBox);
+      });
+    });
+
+    this.#lineRects = lineRects;
   }
 
   getOutlines() {
