@@ -363,6 +363,24 @@ class AnnotationFactory {
             )
           );
           break;
+        case AnnotationEditorType.UNDERLINE:
+          promises.push(
+            UnderlineAnnotation.createNewAnnotation(
+              xref,
+              annotation,
+              dependencies
+            )
+          );
+          break;
+        case AnnotationEditorType.STRIKEOUT:
+          promises.push(
+            StrikeOutAnnotation.createNewAnnotation(
+              xref,
+              annotation,
+              dependencies
+            )
+          );
+          break;
         case AnnotationEditorType.INK:
           promises.push(
             InkAnnotation.createNewAnnotation(xref, annotation, dependencies)
@@ -4582,6 +4600,80 @@ class UnderlineAnnotation extends MarkupAnnotation {
       this.data.popupRef = null;
     }
   }
+
+  static createNewDict(annotation, xref, { apRef, ap }) {
+    const { color, opacity, rect, rotation, user, quadPoints } = annotation;
+    const underline = new Dict(xref);
+    underline.set("Type", Name.get("Annot"));
+    underline.set("Subtype", Name.get("Underline"));
+    underline.set("CreationDate", `D:${getModificationDate()}`);
+    underline.set("Rect", rect);
+    underline.set("F", 4);
+    underline.set("Border", [0, 0, 0]);
+    underline.set("Rotate", rotation);
+    underline.set("QuadPoints", quadPoints);
+
+    // Color.
+    underline.set(
+      "C",
+      Array.from(color, c => c / 255)
+    );
+
+    // Opacity.
+    underline.set("CA", opacity);
+
+    if (user) {
+      underline.set(
+        "T",
+        isAscii(user) ? user : stringToUTF16String(user, /* bigEndian = */ true)
+      );
+    }
+
+    if (apRef || ap) {
+      const n = new Dict(xref);
+      underline.set("AP", n);
+      n.set("N", apRef || ap);
+    }
+
+    return underline;
+  }
+
+  static async createNewAppearanceStream(annotation, xref, params) {
+    const { color, rect, underlines } = annotation;
+
+    const appearanceBuffer = [`${getPdfColor(color, /* isFill */ false)}`];
+
+    const buffer = [];
+    for (let i = 0; i < underlines.length; i += 8) {
+      buffer.length = 0;
+      const rectHeight = underlines[i + 5] - underlines[i + 1];
+      const upShift = rectHeight * 0.1;
+
+      buffer.push(
+        `${numberToString(underlines[i + 0])} ${numberToString(underlines[i + 1] + upShift)} m`,
+        `${numberToString(underlines[i + 2])} ${numberToString(underlines[i + 3] + upShift)} l`
+      );
+      appearanceBuffer.push(buffer.join("\n"));
+    }
+
+    appearanceBuffer.push("S");
+    const appearance = appearanceBuffer.join("\n");
+
+    const appearanceStreamDict = new Dict(xref);
+    appearanceStreamDict.set("FormType", 1);
+    appearanceStreamDict.set("Subtype", Name.get("Form"));
+    appearanceStreamDict.set("Type", Name.get("XObject"));
+    appearanceStreamDict.set("BBox", rect);
+    appearanceStreamDict.set("Length", appearance.length);
+
+    const resources = new Dict(xref);
+    appearanceStreamDict.set("Resources", resources);
+
+    const ap = new StringStream(appearance);
+    ap.dict = appearanceStreamDict;
+
+    return ap;
+  }
 }
 
 class SquigglyAnnotation extends MarkupAnnotation {
@@ -4664,6 +4756,80 @@ class StrikeOutAnnotation extends MarkupAnnotation {
     } else {
       this.data.popupRef = null;
     }
+  }
+
+  static createNewDict(annotation, xref, { apRef, ap }) {
+    const { color, opacity, rect, rotation, user, quadPoints } = annotation;
+    const strikeout = new Dict(xref);
+    strikeout.set("Type", Name.get("Annot"));
+    strikeout.set("Subtype", Name.get("Strikeout"));
+    strikeout.set("CreationDate", `D:${getModificationDate()}`);
+    strikeout.set("Rect", rect);
+    strikeout.set("F", 4);
+    strikeout.set("Border", [0, 0, 0]);
+    strikeout.set("Rotate", rotation);
+    strikeout.set("QuadPoints", quadPoints);
+
+    // Color.
+    strikeout.set(
+      "C",
+      Array.from(color, c => c / 255)
+    );
+
+    // Opacity.
+    strikeout.set("CA", opacity);
+
+    if (user) {
+      strikeout.set(
+        "T",
+        isAscii(user) ? user : stringToUTF16String(user, /* bigEndian = */ true)
+      );
+    }
+
+    if (apRef || ap) {
+      const n = new Dict(xref);
+      strikeout.set("AP", n);
+      n.set("N", apRef || ap);
+    }
+
+    return strikeout;
+  }
+
+  static async createNewAppearanceStream(annotation, xref, params) {
+    const { color, rect, strikeouts } = annotation;
+
+    const appearanceBuffer = [`${getPdfColor(color, /* isFill */ false)}`];
+
+    const buffer = [];
+    for (let i = 0; i < strikeouts.length; i += 8) {
+      buffer.length = 0;
+      const rectHeight = strikeouts[i + 5] - strikeouts[i + 1];
+      const upShift = rectHeight / 2;
+
+      buffer.push(
+        `${numberToString(strikeouts[i + 0])} ${numberToString(strikeouts[i + 1] + upShift)} m`,
+        `${numberToString(strikeouts[i + 2])} ${numberToString(strikeouts[i + 3] + upShift)} l`
+      );
+      appearanceBuffer.push(buffer.join("\n"));
+    }
+
+    appearanceBuffer.push("S");
+    const appearance = appearanceBuffer.join("\n");
+
+    const appearanceStreamDict = new Dict(xref);
+    appearanceStreamDict.set("FormType", 1);
+    appearanceStreamDict.set("Subtype", Name.get("Form"));
+    appearanceStreamDict.set("Type", Name.get("XObject"));
+    appearanceStreamDict.set("BBox", rect);
+    appearanceStreamDict.set("Length", appearance.length);
+
+    const resources = new Dict(xref);
+    appearanceStreamDict.set("Resources", resources);
+
+    const ap = new StringStream(appearance);
+    ap.dict = appearanceStreamDict;
+
+    return ap;
   }
 }
 

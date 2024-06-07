@@ -381,6 +381,32 @@ class UnderlineEditor extends AnnotationEditor {
     return quadPoints;
   }
 
+  #serializeUnderlines() {
+    const [pageWidth, pageHeight] = this.pageDimensions;
+    const underlineBoxes = this.#highlightUnderlines.lineRects;
+    const box = this.#highlightUnderlines.box;
+    const underlines = new Array(underlineBoxes.length * 8);
+    let i = 0;
+    for (const { x1, y1, x2, y2 } of underlineBoxes) {
+      const x = box.x + x1 * box.width;
+      const y = box.y + y1 * box.height;
+      const height = (y2 - y1) * box.height;
+      const width = (x2 - x1) * box.width;
+      const sx = x * pageWidth;
+      const sy = (1 - y - height) * pageHeight;
+      // The specifications say that the rectangle should start from the bottom
+      // left corner and go counter-clockwise.
+      // But when opening the file in Adobe Acrobat it appears that this isn't
+      // correct hence the 4th and 6th numbers are just swapped.
+      underlines[i] = underlines[i + 4] = sx;
+      underlines[i + 1] = underlines[i + 3] = sy;
+      underlines[i + 2] = underlines[i + 6] = sx + width * pageWidth;
+      underlines[i + 5] = underlines[i + 7] = sy + height * pageHeight;
+      i += 8;
+    }
+    return underlines;
+  }
+
   /** @inheritdoc */
   static deserialize(data, parent, uiManager) {
     const editor = super.deserialize(data, parent, uiManager);
@@ -420,6 +446,7 @@ class UnderlineEditor extends AnnotationEditor {
       color,
       opacity: this.#opacity,
       quadPoints: this.#serializeBoxes(),
+      underlines: this.#serializeUnderlines(),
       pageIndex: this.pageIndex,
       rect,
       rotation: 0,
