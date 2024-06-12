@@ -38,7 +38,7 @@
       var(--outline-around-width)
   );
   --editorFreeText-editing-cursor: text;
-  --editorPopup-editing-cursor: crosshair;
+  --editorText-editing-cursor: crosshair;
   /*#if COMPONENTS*/
   --editorInk-editing-cursor: pointer;
   --editorSquare-editing-cursor: crosshair;
@@ -107,8 +107,8 @@
   cursor: var(--editorFreeText-editing-cursor);
 }
 
-.annotationEditorLayer.popupEditing {
-  cursor: var(--editorPopup-editing-cursor);
+.annotationEditorLayer.textEditing {
+  cursor: var(--editorText-editing-cursor);
 }
 
 .annotationEditorLayer.inkEditing {
@@ -119,7 +119,7 @@
   cursor: var(--editorSquare-editing-cursor);
 }
 
-.popupEditor {
+.textEditor {
   box-shadow: 0px 9px 28px 8px #0000000d;
   border-radius: 8px;
   padding: 0 !important;
@@ -221,7 +221,7 @@
 }
 
 .annotationEditorLayer
-  :is(.freeTextEditor, .inkEditor, .popupEditor, .squareEditor, .stampEditor) {
+  :is(.freeTextEditor, .inkEditor, .textEditor, .squareEditor, .stampEditor) {
   position: absolute;
   background: transparent;
   z-index: 1;
@@ -282,7 +282,7 @@
   :is(
     .freeTextEditor,
     .inkEditor,
-    .popupEditor,
+    .textEditor,
     .squareEditor,
     .stampEditor,
     .highlightEditor,
@@ -511,7 +511,7 @@
   }
 }
 
-.annotationEditorLayer .popupEditor,
+.annotationEditorLayer .textEditor,
 .annotationEditorLayer .freeTextEditor {
   padding: calc(var(--freetext-padding) * var(--scale-factor));
   width: auto;
@@ -519,7 +519,7 @@
   touch-action: none;
 }
 
-.annotationEditorLayer .popupEditor .internal,
+.annotationEditorLayer .textEditor .internal,
 .annotationEditorLayer .freeTextEditor .internal {
   background: transparent;
   border: none;
@@ -531,7 +531,7 @@
   user-select: none;
 }
 
-.annotationEditorLayer .popupEditor .overlay,
+.annotationEditorLayer .textEditor .overlay,
 .annotationEditorLayer .freeTextEditor .overlay {
   position: absolute;
   display: none;
@@ -541,18 +541,18 @@
   height: 100%;
 }
 
-.annotationEditorLayer .popupEditor .overlay.enabled,
+.annotationEditorLayer .textEditor .overlay.enabled,
 .annotationEditorLayer .freeTextEditor .overlay.enabled {
   display: block;
 }
 
-.annotationEditorLayer .popupEditor .internal:empty::before,
+.annotationEditorLayer .textEditor .internal:empty::before,
 .annotationEditorLayer .freeTextEditor .internal:empty::before {
   content: attr(default-content);
   color: gray;
 }
 
-.annotationEditorLayer .popupEditor .internal:focus,
+.annotationEditorLayer .textEditor .internal:focus,
 .annotationEditorLayer .freeTextEditor .internal:focus {
   outline: none;
   user-select: auto;
@@ -589,7 +589,7 @@
 }
 
 .annotationEditorLayer {
-  :is(.freeTextEditor, .popupEditor, .inkEditor, .squareEditor, .stampEditor) {
+  :is(.freeTextEditor, .textEditor, .inkEditor, .squareEditor, .stampEditor) {
     & > .resizers {
       position: absolute;
       inset: 0;

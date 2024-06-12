@@ -34,7 +34,7 @@ class AnnotationEditorParams {
     editorSquareColor,
     editorSquareOpacity,
     editorStampAddImage,
-    editorPopupColor,
+    editorTextColor,
   }) {
     const dispatchEvent = (typeStr, value) => {
       this.eventBus.dispatch("switchannotationeditorparams", {
@@ -67,8 +67,8 @@ class AnnotationEditorParams {
     editorStampAddImage.addEventListener("click", () => {
       dispatchEvent("CREATE");
     });
-    editorPopupColor.addEventListener("input", function () {
-      dispatchEvent("POPUP_COLOR", this.value);
+    editorTextColor.addEventListener("input", function () {
+      dispatchEvent("TEXT_COLOR", this.value);
     });
 
     this.eventBus._on("annotationeditorparamschanged", evt => {
@@ -95,8 +95,8 @@ class AnnotationEditorParams {
           case AnnotationEditorParamsType.SQUARE_OPACITY:
             editorSquareOpacity.value = value;
             break;
-          case AnnotationEditorParamsType.POPUP_COLOR:
-            editorPopupColor.value = value;
+          case AnnotationEditorParamsType.TEXT_COLOR:
+            editorTextColor.value = value;
             break;
         }
       }

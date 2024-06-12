@@ -31,9 +31,9 @@ import { AnnotationEditor } from "./editor.js";
 import { FreeTextAnnotationElement } from "../annotation_layer.js";
 
 /**
- * Text editor in order to create a Popup annotation.
+ * Text editor in order to create a Text annotation.
  */
-class PopupEditor extends AnnotationEditor {
+class TextEditor extends AnnotationEditor {
   #apiData = null;
 
   #boundEditorDivBlur = this.editorDivBlur.bind(this);
@@ -62,12 +62,10 @@ class PopupEditor extends AnnotationEditor {
 
   #largeNoteDiv = null;
 
-  static _internalPadding = 0;
-
   static _defaultColor = "#98CDF6";
 
   static get _keyboardManager() {
-    const proto = PopupEditor.prototype;
+    const proto = TextEditor.prototype;
 
     const arrowChecker = self => self.isEmpty();
 
@@ -134,15 +132,15 @@ class PopupEditor extends AnnotationEditor {
     );
   }
 
-  static _type = "popup";
+  static _type = "text";
 
-  static _editorType = AnnotationEditorType.POPUP;
+  static _editorType = AnnotationEditorType.TEXT;
 
   constructor(params) {
-    super({ ...params, name: "popupEditor" });
+    super({ ...params, name: "textEditor" });
     this.#color =
       params.color ||
-      PopupEditor._defaultColor ||
+      TextEditor._defaultColor ||
       AnnotationEditor._defaultLineColor;
   }
 
@@ -154,8 +152,8 @@ class PopupEditor extends AnnotationEditor {
   /** @inheritdoc */
   static updateDefaultParams(type, value) {
     switch (type) {
-      case AnnotationEditorParamsType.POPUP_COLOR:
-        PopupEditor._defaultColor = value;
+      case AnnotationEditorParamsType.TEXT_COLOR:
+        TextEditor._defaultColor = value;
         break;
     }
   }
@@ -163,7 +161,7 @@ class PopupEditor extends AnnotationEditor {
   /** @inheritdoc */
   updateParams(type, value) {
     switch (type) {
-      case AnnotationEditorParamsType.POPUP_COLOR:
+      case AnnotationEditorParamsType.TEXT_COLOR:
         this.#updateColor(value);
         break;
     }
@@ -171,7 +169,7 @@ class PopupEditor extends AnnotationEditor {
 
   get localParams() {
     return {
-      [AnnotationEditorParamsType.POPUP_COLOR]: this.#color,
+      [AnnotationEditorParamsType.TEXT_COLOR]: this.#color,
     };
   }
 
@@ -179,15 +177,15 @@ class PopupEditor extends AnnotationEditor {
   static get defaultPropertiesToUpdate() {
     return [
       [
-        AnnotationEditorParamsType.POPUP_COLOR,
-        PopupEditor._defaultColor || AnnotationEditor._defaultLineColor,
+        AnnotationEditorParamsType.TEXT_COLOR,
+        TextEditor._defaultColor || AnnotationEditor._defaultLineColor,
       ],
     ];
   }
 
   /** @inheritdoc */
   get propertiesToUpdate() {
-    return [[AnnotationEditorParamsType.POPUP_COLOR, this.#color]];
+    return [[AnnotationEditorParamsType.TEXT_COLOR, this.#color]];
   }
 
   /**
@@ -214,7 +212,7 @@ class PopupEditor extends AnnotationEditor {
             savedColor;
       },
       mustExec: true,
-      type: AnnotationEditorParamsType.POPUP_COLOR,
+      type: AnnotationEditorParamsType.TEXT_COLOR,
       overwriteIfSameType: true,
       keepUndo: true,
     });
@@ -253,7 +251,7 @@ class PopupEditor extends AnnotationEditor {
     }
 
     this.parent.setEditingState(false);
-    this.parent.updateToolbar(AnnotationEditorType.POPUP);
+    this.parent.updateToolbar(AnnotationEditorType.TEXT);
     super.enableEditMode();
     this.overlayDiv.classList.remove("enabled");
     this.editorDiv.contentEditable = true;
@@ -290,7 +288,7 @@ class PopupEditor extends AnnotationEditor {
 
     // In case the blur callback hasn't been called.
     this.isEditing = false;
-    this.parent.div.classList.add("popupEditing");
+    this.parent.div.classList.add("textEditing");
   }
 
   /** @inheritdoc */
@@ -339,7 +337,7 @@ class PopupEditor extends AnnotationEditor {
     this.isEditing = false;
     if (this.parent) {
       this.parent.setEditingState(true);
-      this.parent.div.classList.add("popupEditing");
+      this.parent.div.classList.add("textEditing");
     }
     super.remove();
   }
@@ -387,6 +385,7 @@ class PopupEditor extends AnnotationEditor {
       this.width = rect.height / parentWidth;
       this.height = rect.width / parentHeight;
     }
+
     this.fixAndSetPosition();
   }
 
@@ -468,7 +467,7 @@ class PopupEditor extends AnnotationEditor {
   }
 
   editorDivKeydown(event) {
-    PopupEditor._keyboardManager.exec(this, event);
+    TextEditor._keyboardManager.exec(this, event);
   }
 
   editorDivFocus(event) {
@@ -480,7 +479,7 @@ class PopupEditor extends AnnotationEditor {
   }
 
   editorDivInput(event) {
-    this.parent.div.classList.toggle("popupEditing", this.isEmpty());
+    this.parent.div.classList.toggle("textEditing", this.isEmpty());
   }
 
   /** @inheritdoc */
@@ -519,6 +518,8 @@ class PopupEditor extends AnnotationEditor {
   toggleNoteAppearance(emitEvent = true) {
     const toggleCommand = () => {
       this.#isCollapsed = !this.#isCollapsed;
+      // TODO: Adjust width and height as collapsed state changes
+      this.fixAndSetPosition();
       this.#smallNoteDiv.classList.toggle("show");
       this.#largeNoteDiv.classList.toggle("show");
     };
@@ -630,7 +631,7 @@ class PopupEditor extends AnnotationEditor {
     this.editorDiv.className = "internal";
 
     this.editorDiv.setAttribute("id", this.#editorDivId);
-    this.editorDiv.setAttribute("data-l10n-id", "pdfjs-popup");
+    this.editorDiv.setAttribute("data-l10n-id", "pdfjs-text");
     this.enableEditing();
 
     this.editorDiv?.setAttribute("default-content", "Start typing");
@@ -734,7 +735,7 @@ class PopupEditor extends AnnotationEditor {
 
   /** @inheritdoc */
   static deserialize(data, parent, uiManager) {
-    // TODO
+    // TODO: Confirm implementation
     let initialData = null;
     if (data instanceof FreeTextAnnotationElement) {
       const {
@@ -752,7 +753,7 @@ class PopupEditor extends AnnotationEditor {
         return null;
       }
       initialData = data = {
-        annotationType: AnnotationEditorType.POPUP,
+        annotationType: AnnotationEditorType.TEXT,
         value: textContent.join("\n"),
         position: textPosition,
         pageIndex: pageNumber - 1,
@@ -774,7 +775,6 @@ class PopupEditor extends AnnotationEditor {
 
   /** @inheritdoc */
   serialize(isForCopying = false) {
-    // TODO
     if (this.isEmpty()) {
       return null;
     }
@@ -787,8 +787,7 @@ class PopupEditor extends AnnotationEditor {
       };
     }
 
-    const padding = PopupEditor._internalPadding * this.parentScale;
-    const rect = this.getRect(padding, padding);
+    const rect = this.getRect(0, 0);
     const color = AnnotationEditor._colorManager.convert(
       this.isAttachedToDOM
         ? getComputedStyle(this.editorDiv).color
@@ -796,9 +795,9 @@ class PopupEditor extends AnnotationEditor {
     );
 
     const serialized = {
-      annotationType: AnnotationEditorType.POPUP,
+      annotationType: AnnotationEditorType.TEXT,
       color,
-      value: this.#content,
+      content: this.#content,
       pageIndex: this.pageIndex,
       rect,
       rotation: this.rotation,
@@ -828,7 +827,7 @@ class PopupEditor extends AnnotationEditor {
     const rect = this.getRect(0, 0);
 
     return {
-      annotationType: AnnotationEditorType.POPUP,
+      annotationType: AnnotationEditorType.TEXT,
       color: this.#color,
       text: this.#content,
       pageIndex: this.pageIndex,
@@ -876,9 +875,8 @@ class PopupEditor extends AnnotationEditor {
       return;
     }
 
-    const padding = PopupEditor._internalPadding * this.parentScale;
-    this.#initialData.rect = this.getRect(padding, padding);
+    this.#initialData.rect = this.getRect(0, 0);
   }
 }
 
-export { PopupEditor };
+export { TextEditor };

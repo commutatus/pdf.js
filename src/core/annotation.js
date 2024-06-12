@@ -381,6 +381,16 @@ class AnnotationFactory {
             )
           );
           break;
+        case AnnotationEditorType.SQUARE:
+          promises.push(
+            SquareAnnotation.createNewAnnotation(xref, annotation, dependencies)
+          );
+          break;
+        case AnnotationEditorType.TEXT:
+          promises.push(
+            TextAnnotation.createNewAnnotation(xref, annotation, dependencies)
+          );
+          break;
         case AnnotationEditorType.INK:
           promises.push(
             InkAnnotation.createNewAnnotation(xref, annotation, dependencies)
@@ -3669,6 +3679,38 @@ class TextAnnotation extends MarkupAnnotation {
       this.data.stateModel = null;
     }
   }
+
+  static createNewDict(annotation, xref) {
+    const { color, content, rect, rotation, user } = annotation;
+    const textAnnotation = new Dict(xref);
+    textAnnotation.set("Type", Name.get("Annot"));
+    textAnnotation.set("Subtype", Name.get("Text"));
+    textAnnotation.set("CreationDate", `D:${getModificationDate()}`);
+    textAnnotation.set("Rect", rect);
+    textAnnotation.set("F", 4);
+    textAnnotation.set("Border", [0, 0, 0]);
+    textAnnotation.set("Rotate", rotation);
+    textAnnotation.set("Contents", content);
+
+    // Color.
+    textAnnotation.set(
+      "Color",
+      Array.from(color, c => c / 255)
+    );
+
+    if (user) {
+      textAnnotation.set(
+        "T",
+        isAscii(user) ? user : stringToUTF16String(user, /* bigEndian = */ true)
+      );
+    }
+
+    return textAnnotation;
+  }
+
+  static async createNewAppearanceStream() {
+    return null;
+  }
 }
 
 class LinkAnnotation extends Annotation {
@@ -4101,6 +4143,89 @@ class SquareAnnotation extends MarkupAnnotation {
         },
       });
     }
+  }
+
+  static createNewDict(annotation, xref, { apRef, ap }) {
+    const { color, opacity, rect, rotation, user } = annotation;
+    const square = new Dict(xref);
+    square.set("Type", Name.get("Annot"));
+    square.set("Subtype", Name.get("Square"));
+    square.set("CreationDate", `D:${getModificationDate()}`);
+    square.set("Rect", rect);
+    square.set("F", 4);
+    square.set("Border", [0, 0, 0]);
+    square.set("Rotate", rotation);
+
+    // Interior Color.
+    square.set(
+      "IC",
+      Array.from(color, c => c / 255)
+    );
+
+    // Opacity.
+    square.set("CA", opacity);
+
+    if (user) {
+      square.set(
+        "T",
+        isAscii(user) ? user : stringToUTF16String(user, /* bigEndian = */ true)
+      );
+    }
+
+    if (apRef || ap) {
+      const n = new Dict(xref);
+      square.set("AP", n);
+      n.set("N", apRef || ap);
+    }
+
+    return square;
+  }
+
+  static async createNewAppearanceStream(annotation, xref, params) {
+    const { color, rect, opacity } = annotation;
+
+    const appearanceBuffer = [
+      `${getPdfColor(color, /* isFill */ true)}`,
+      /**
+       * TODO: Find a way to make the line width disappear
+       * or make the color match with the fill color exactly
+       * after application of opacity changes
+       */
+      `${getPdfColor(color, /* isFill */ false)}`,
+      "/R0 gs",
+    ];
+
+    const [x1, y1, x2, y2] = rect;
+    const width = x2 - x1;
+    const height = y2 - y1;
+
+    appearanceBuffer.push(`${x1} ${y1} ${width} ${height} re`, "B");
+    const appearance = appearanceBuffer.join("\n");
+
+    const appearanceStreamDict = new Dict(xref);
+    appearanceStreamDict.set("FormType", 1);
+    appearanceStreamDict.set("Subtype", Name.get("Form"));
+    appearanceStreamDict.set("Type", Name.get("XObject"));
+    appearanceStreamDict.set("BBox", rect);
+    appearanceStreamDict.set("Length", appearance.length);
+
+    const resources = new Dict(xref);
+    const extGState = new Dict(xref);
+    resources.set("ExtGState", extGState);
+    appearanceStreamDict.set("Resources", resources);
+    const r0 = new Dict(xref);
+    extGState.set("R0", r0);
+    r0.set("BM", Name.get("Multiply"));
+
+    if (opacity !== 1) {
+      r0.set("ca", opacity);
+      r0.set("Type", Name.get("ExtGState"));
+    }
+
+    const ap = new StringStream(appearance);
+    ap.dict = appearanceStreamDict;
+
+    return ap;
   }
 }
 

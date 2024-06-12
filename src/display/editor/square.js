@@ -62,6 +62,7 @@ class SquareEditor extends AnnotationEditor {
 
   static _editorType = AnnotationEditorType.SQUARE;
 
+  // TODO: Fix 3 annotations being created instead of 1
   constructor(params) {
     super({ ...params, name: "squareEditor" });
     this.color = params.color || null;
@@ -848,11 +849,11 @@ class SquareEditor extends AnnotationEditor {
     };
   }
 
+  // TODO: Verify deserialize implementation
   /** @inheritdoc */
   static deserialize(data, parent, uiManager) {
     const editor = super.deserialize(data, parent, uiManager);
 
-    editor.thickness = data.thickness;
     editor.color = Util.makeHexColor(...data.color);
     editor.opacity = data.opacity;
 
@@ -866,32 +867,24 @@ class SquareEditor extends AnnotationEditor {
 
     editor.#baseWidth = Math.max(AnnotationEditor.MIN_SIZE);
     editor.#baseHeight = Math.max(AnnotationEditor.MIN_SIZE);
-    editor.#setScaleFactor(width, height);
 
     return editor;
   }
 
   /** @inheritdoc */
   serialize() {
-    // TODO
-    if (this.isEmpty()) {
+    // TODO: Fix this workaround
+    if (this.isEmpty() || !this.color) {
       return null;
     }
 
     const rect = this.getRect(0, 0);
-    const color = AnnotationEditor._colorManager.convert(this.ctx.strokeStyle);
+    const color = AnnotationEditor._colorManager.convert(this.color);
 
     return {
       annotationType: AnnotationEditorType.SQUARE,
       color,
-      thickness: this.thickness,
       opacity: this.opacity,
-      paths: this.#serializePaths(
-        this.scaleFactor / this.parentScale,
-        this.translationX,
-        this.translationY,
-        rect
-      ),
       pageIndex: this.pageIndex,
       rect,
       rotation: this.rotation,

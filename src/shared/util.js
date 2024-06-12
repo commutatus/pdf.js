@@ -78,7 +78,7 @@ const AnnotationEditorType = {
   STRIKEOUT: 12,
   STAMP: 13,
   INK: 15,
-  POPUP: 16,
+  TEXT: 1,
 };
 
 const AnnotationEditorParamsType = {
@@ -93,7 +93,7 @@ const AnnotationEditorParamsType = {
   HIGHLIGHT_COLOR: 31,
   SQUARE_COLOR: 41,
   SQUARE_OPACITY: 42,
-  POPUP_COLOR: 51,
+  TEXT_COLOR: 51,
 };
 
 // Permission flags from Table 22, Section 7.6.3.2 of the PDF specification.

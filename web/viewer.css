@@ -595,7 +595,7 @@ body {
   inset-inline-end: calc(var(--editor-toolbar-base-offset) + 56px);
 }
 
-#editorPopupParamsToolbar {
+#editorTextParamsToolbar {
   inset-inline-end: calc(var(--editor-toolbar-base-offset) + 56px);
 }
 
@@ -918,8 +918,8 @@ body {
   mask-image: var(--toolbarButton-presentationMode-icon);
 }
 
-#editorPopup::before {
-  mask-image: var(--toolbarButton-editorPopup-icon);
+#editorText::before {
+  mask-image: var(--toolbarButton-editorText-icon);
 }
 
 #editorHighlight::before,

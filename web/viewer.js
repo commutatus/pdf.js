@@ -54,12 +54,12 @@ function getViewerConfiguration() {
       viewFind: document.getElementById("viewFind"),
       print: document.getElementById("print"),
       editorFreeTextButton: document.getElementById("editorFreeText"),
-      editorPopupButton: document.getElementById("editorPopup"),
+      editorTextButton: document.getElementById("editorText"),
       editorFreeTextParamsToolbar: document.getElementById(
         "editorFreeTextParamsToolbar"
       ),
-      editorPopupParamsToolbar: document.getElementById(
-        "editorPopupParamsToolbar"
+      editorTextParamsToolbar: document.getElementById(
+        "editorTextParamsToolbar"
       ),
       editorHighlightButton: document.getElementById("editorHighlight"),
       editorHighlightParamsToolbar: document.getElementById(
@@ -196,7 +196,7 @@ function getViewerConfiguration() {
       editorSquareColor: document.getElementById("editorSquareColor"),
       editorSquareOpacity: document.getElementById("editorSquareOpacity"),
       editorStampAddImage: document.getElementById("editorStampAddImage"),
-      editorPopupColor: document.getElementById("editorPopupColor"),
+      editorTextColor: document.getElementById("editorTextColor"),
     },
     printContainer: document.getElementById("printContainer"),
     openFileInput:

@@ -72,14 +72,14 @@ class Toolbar {
         },
       },
       {
-        element: options.editorPopupButton,
+        element: options.editorTextButton,
         eventName: "switchannotationeditormode",
         eventDetails: {
           get mode() {
-            const { classList } = options.editorPopupButton;
+            const { classList } = options.editorTextButton;
             return classList.contains("toggled")
               ? AnnotationEditorType.NONE
-              : AnnotationEditorType.POPUP;
+              : AnnotationEditorType.TEXT;
           },
         },
       },
@@ -290,8 +290,8 @@ class Toolbar {
       editorSquareParamsToolbar,
       editorStampButton,
       editorStampParamsToolbar,
-      editorPopupButton,
-      editorPopupParamsToolbar,
+      editorTextButton,
+      editorTextParamsToolbar,
     } = this.#opts;
 
     toggleCheckedBtn(
@@ -300,9 +300,9 @@ class Toolbar {
       editorFreeTextParamsToolbar
     );
     toggleCheckedBtn(
-      editorPopupButton,
-      mode === AnnotationEditorType.POPUP,
-      editorPopupParamsToolbar
+      editorTextButton,
+      mode === AnnotationEditorType.TEXT,
+      editorTextParamsToolbar
     );
     toggleCheckedBtn(
       editorHighlightButton,
@@ -337,7 +337,7 @@ class Toolbar {
 
     const isDisable = mode === AnnotationEditorType.DISABLE;
     editorFreeTextButton.disabled = isDisable;
-    editorPopupButton.disabled = isDisable;
+    editorTextButton.disabled = isDisable;
     editorHighlightButton.disabled = isDisable;
     editorUnderlineButton.disabled = isDisable;
     editorStrikeoutButton.disabled = isDisable;
