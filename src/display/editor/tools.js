@@ -523,6 +523,8 @@ class AnnotationEditorUIManager {
 
   #allEditors = new Map();
 
+  #visibleLinkNodes = [];
+
   #allLayers = new Map();
 
   #altTextManager = null;
@@ -598,6 +600,8 @@ class AnnotationEditorUIManager {
   #container = null;
 
   #viewer = null;
+
+  linkNodeTargetId = null;
 
   static TRANSLATE_SMALL = 1; // page units.
 
@@ -885,6 +889,69 @@ class AnnotationEditorUIManager {
     this.viewParameters.rotation = pagesRotation;
   }
 
+  onLinkNodeTargetChanging({ id }) {
+    this.linkNodeTargetId = id || null;
+
+    // Filter list of visible link nodes
+    const listOfVisibleLinkNodes = [];
+    for (const editor of this.#allEditors.values()) {
+      if (editor.name === "linkNodeEditor") {
+        if (
+          editor.targetId &&
+          `${editor.targetId}` === `${this.linkNodeTargetId}`
+        ) {
+          editor.show();
+          listOfVisibleLinkNodes.push(editor);
+        } else {
+          editor.hide();
+        }
+      }
+    }
+
+    this.#visibleLinkNodes = listOfVisibleLinkNodes;
+    this.#dispatchVisibleLinkNodeDivs();
+  }
+
+  #dispatchVisibleLinkNodeDivs() {
+    this._eventBus.dispatch("com_visibleLinkNodesChanged", {
+      source: this,
+      details: this.#visibleLinkNodes.map(editor => editor.div),
+    });
+  }
+
+  #sendUpdatedNodeList(targetId) {
+    if (!targetId) {
+      return;
+    }
+
+    const serialized = [];
+
+    for (const editor of this.#allEditors.values()) {
+      if (`${editor.targetId}` === `${targetId}`) {
+        serialized.push(editor.serializeToJSON());
+      }
+    }
+
+    this._eventBus.dispatch("com_linkNodeForMarginNodeChanged", {
+      source: this,
+      details: {
+        id: targetId,
+        serialized,
+      },
+    });
+  }
+
+  createLinkNode(targetId) {
+    for (const layer of this.#allLayers.values()) {
+      if (layer.hasTempHighlight) {
+        layer.createLinkNode(targetId);
+        break;
+      }
+    }
+
+    this.#sendUpdatedNodeList(targetId);
+  }
+
   /**
    * Add an editor in the annotation storage.
    * @param {AnnotationEditor} editor
@@ -1124,6 +1191,31 @@ class AnnotationEditorUIManager {
     });
   }
 
+  parseLinkNodesFromJSON({ linkNodesList }) {
+    const layersChanged = new Set(),
+      newEditors = [];
+    linkNodesList.forEach(linkNodeData => {
+      const annotationEditorLayer = this.#allLayers.get(linkNodeData.pageIndex);
+
+      // Convert to editor
+      const editor = annotationEditorLayer.deserializeLinkNode(linkNodeData);
+      this.#addEditorToLayer(editor);
+      layersChanged.add(annotationEditorLayer);
+      newEditors.push(editor);
+    });
+
+    // TODO: This is a hacky fix. Find better solution
+    layersChanged.forEach(layer => {
+      layer.afterLinkNodesLoaded();
+    });
+  }
+
+  dispatchLinkNodeReady() {
+    this._eventBus.dispatch("com_linkNodeReady", {
+      source: this,
+    });
+  }
+
   /**
    * Update the different possible states of this manager, e.g. is there
    * something to undo, redo, ...
@@ -1174,7 +1266,6 @@ class AnnotationEditorUIManager {
       this.#dispatchUpdateStates({
         isEditing: false,
       });
-      this.disableUserSelect(false);
     }
   }
 
@@ -1244,14 +1335,20 @@ class AnnotationEditorUIManager {
     if (mode === AnnotationEditorType.NONE) {
       this.setEditingState(false);
       this.#disableAll();
-      return;
+    } else {
+      this.setEditingState(true);
+      this.#enableAll();
+      this.unselectAll();
     }
-    this.setEditingState(true);
-    this.#enableAll();
-    this.unselectAll();
+
     for (const layer of this.#allLayers.values()) {
       layer.updateMode(mode);
     }
+
+    if (mode === AnnotationEditorType.NONE) {
+      return;
+    }
+
     if (!editId && isFromKeyboard) {
       this.addNewEditorFromKeyboard();
       return;
@@ -1592,10 +1689,18 @@ class AnnotationEditorUIManager {
         return;
       }
 
-      this._eventBus.dispatch("com_annotationupdated", {
-        serialized: editor.serializeToJSON(),
-        id: editor.apiId,
-      });
+      if (editor.name === "linkNodeEditor") {
+        // Link nodes cannot be updated, only added or removed
+        if (!editor?.div?.classList?.contains?.("hidden")) {
+          this.#visibleLinkNodes.push(editor);
+          this.#dispatchVisibleLinkNodeDivs();
+        }
+      } else {
+        this._eventBus.dispatch("com_annotationupdated", {
+          serialized: editor.serializeToJSON(),
+          id: editor.apiId,
+        });
+      }
     };
 
     const signalChange = () => {
@@ -1671,9 +1776,30 @@ class AnnotationEditorUIManager {
     const editors = [...this.#selectedEditors];
     const cmd = () => {
       for (const editor of editors) {
-        this._eventBus.dispatch("com_annotationdeleted", {
-          id: editor.apiId,
-        });
+        if (editor.name === "linkNodeEditor") {
+          let visibleEditorDeleted = false;
+          this.#visibleLinkNodes = this.#visibleLinkNodes.filter(
+            linkNodeEditor => {
+              const shouldKeep = linkNodeEditor !== editor;
+
+              if (!shouldKeep) {
+                visibleEditorDeleted = true;
+              }
+
+              return shouldKeep;
+            }
+          );
+
+          if (visibleEditorDeleted) {
+            this.#dispatchVisibleLinkNodeDivs();
+          }
+
+          this.#sendUpdatedNodeList(editor.targetId);
+        } else {
+          this._eventBus.dispatch("com_annotationdeleted", {
+            id: editor.apiId,
+          });
+        }
         editor.remove();
       }
     };

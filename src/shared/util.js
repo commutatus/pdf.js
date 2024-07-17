@@ -79,6 +79,7 @@ const AnnotationEditorType = {
   STAMP: 13,
   INK: 15,
   TEXT: 1,
+  LINK_NODE: 99,
 };
 
 const AnnotationEditorParamsType = {

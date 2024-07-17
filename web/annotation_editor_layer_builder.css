@@ -287,6 +287,7 @@
     .stampEditor,
     .highlightEditor,
     .underlineEditor,
+    .linkNodeEditor,
     .strikeoutEditor
   ) {
   .editToolbar {
@@ -505,6 +506,135 @@
 
             pointer-events: none;
           }
+        }
+      }
+    }
+  }
+}
+
+.linkNodeEditor.hidden {
+  display: none;
+}
+
+.annotationEditorLayer :is(.tempHighlightEditor) {
+  .actionsMenuBar {
+    --action-bar-delete-image: url(images/editor-toolbar-delete.svg);
+    --action-bar-bg-color: #f0f0f4;
+    --action-bar-fg-color: black;
+    --action-bar-border-color: #dbdbdb;
+    --action-bar-hover-border-color: var(--action-bar-border-color);
+    --action-bar-hover-bg-color: #e0e0e6;
+    --action-bar-hover-fg-color: var(--action-bar-fg-color);
+    --action-bar-hover-outline: none;
+    --action-bar-focus-outline-color: #0060df;
+    --action-bar-shadow: 0 2px 6px 0 rgb(58 57 68 / 0.2);
+    --action-bar-vert-offset: 6px;
+    --action-bar-height: 28px;
+    --action-bar-padding: 4px;
+
+    font-size: 14px;
+    color: black;
+
+    @media (prefers-color-scheme: dark) {
+      --action-bar-bg-color: #fbfbfe;
+      --action-bar-fg-color: black;
+      --action-bar-hover-bg-color: rgba(0, 0, 0, 0.04);
+      --action-bar-focus-outline-color: #0df;
+    }
+
+    display: flex;
+    width: max-content;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: default;
+    pointer-events: auto;
+    box-sizing: content-box;
+    padding: var(--action-bar-padding);
+    font-size: 22px;
+
+    position: absolute;
+    inset-inline-end: 0;
+    inset-block-start: calc(100% + var(--action-bar-vert-offset));
+
+    border-radius: 6px;
+    background-color: var(--action-bar-bg-color);
+    border: 1px solid var(--action-bar-border-color);
+    box-shadow: var(--action-bar-shadow);
+
+    &.hidden {
+      display: none;
+    }
+
+    &:has(:focus-visible) {
+      border-color: transparent;
+    }
+
+    &:dir(ltr) {
+      transform-origin: 100% 0;
+    }
+
+    &:dir(rtl) {
+      transform-origin: 0 0;
+    }
+
+    .buttons {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 0;
+      height: 100%;
+      width: 100%;
+
+      .delete {
+        width: var(--action-bar-height);
+
+        &::before {
+          content: "";
+          mask-image: var(--action-bar-delete-image);
+          mask-repeat: no-repeat;
+          mask-position: center;
+          display: inline-block;
+          background-color: var(--action-bar-fg-color);
+          height: 100%;
+        }
+
+        &:hover::before {
+          background-color: var(--action-bar-hover-fg-color);
+        }
+      }
+
+      > * {
+        height: var(--action-bar-height);
+      }
+
+      > :not(.divider) {
+        border: none;
+        background-color: transparent;
+        cursor: pointer;
+        display: flex;
+        column-gap: 8px;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 5px 12px;
+        width: 197px;
+
+        &:hover {
+          border-radius: 2px;
+          background-color: var(--action-bar-hover-bg-color);
+          color: var(--action-bar-hover-fg-color);
+          outline: var(--action-bar-hover-outline);
+          outline-offset: 1px;
+
+          &:active {
+            outline: none;
+          }
+        }
+
+        &:focus-visible {
+          border-radius: 2px;
+          outline: 2px solid var(--action-bar-focus-outline-color);
         }
       }
     }
@@ -1072,7 +1202,8 @@
   &[data-main-rotation="0"] {
     .highlightEditor > .editToolbar,
     .underlineEditor > .editToolbar,
-    .strikeoutEditor > .editToolbar {
+    .strikeoutEditor > .editToolbar,
+    .linkNodeEditor > .editToolbar {
       rotate: 0deg;
     }
   }
@@ -1080,7 +1211,8 @@
   &[data-main-rotation="90"] {
     .highlightEditor > .editToolbar,
     .underlineEditor > .editToolbar,
-    .strikeoutEditor > .editToolbar {
+    .strikeoutEditor > .editToolbar,
+    .linkNodeEditor > .editToolbar {
       rotate: 270deg;
     }
   }
@@ -1088,7 +1220,8 @@
   &[data-main-rotation="180"] {
     .highlightEditor > .editToolbar,
     .underlineEditor > .editToolbar,
-    .strikeoutEditor > .editToolbar {
+    .strikeoutEditor > .editToolbar,
+    .linkNodeEditor > .editToolbar {
       rotate: 180deg;
     }
   }
@@ -1096,14 +1229,16 @@
   &[data-main-rotation="270"] {
     .highlightEditor > .editToolbar,
     .underlineEditor > .editToolbar,
-    .strikeoutEditor > .editToolbar {
+    .strikeoutEditor > .editToolbar,
+    .linkNodeEditor > .editToolbar {
       rotate: 90deg;
     }
   }
 
   .highlightEditor,
   .underlineEditor,
-  .strikeoutEditor {
+  .strikeoutEditor,
+  .linkNodeEditor {
     position: absolute;
     background: transparent;
     z-index: 1;
@@ -1213,6 +1348,43 @@
           }
         }
       }
+    }
+  }
+
+  .tempHighlightEditor {
+    position: absolute;
+    background: transparent;
+    z-index: 1;
+    transform-origin: 0 0;
+    cursor: auto;
+    max-width: 100%;
+    max-height: 100%;
+    border: none;
+    outline: none;
+    pointer-events: none;
+    transform: none;
+
+    .internal {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: auto;
+    }
+
+    &.disabled .internal {
+      pointer-events: none;
+    }
+
+    &.selectedEditor {
+      .internal {
+        cursor: pointer;
+      }
+    }
+
+    .actionsMenuBar {
+      transform-origin: center !important;
     }
   }
 }

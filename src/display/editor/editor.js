@@ -73,6 +73,8 @@ class AnnotationEditor {
 
   #moveInDOMTimeout = null;
 
+  disableToolbar = false;
+
   _initialOptions = Object.create(null);
 
   _uiManager = null;
@@ -90,6 +92,10 @@ class AnnotationEditor {
   selectedText = null;
 
   apiId = null;
+
+  ignoreNextChangeEvent = false;
+
+  wasAddedFromApi = false;
 
   static _borderLineWidth = -1;
 
@@ -1470,6 +1476,11 @@ class AnnotationEditor {
   select() {
     this.makeResizable();
     this.div?.classList.add("selectedEditor");
+
+    if (this.disableToolbar) {
+      return;
+    }
+
     if (!this.#editToolbar) {
       this.addEditToolbar().then(() => {
         if (this.div?.classList.contains("selectedEditor")) {
@@ -1496,6 +1507,27 @@ class AnnotationEditor {
       this._uiManager.currentLayer.div.focus();
     }
     this.#editToolbar?.hide();
+  }
+
+  async copyToClipboard(text) {
+    if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
+      // Clipboard API method
+      return navigator.clipboard.writeText(text).then(
+        function () {
+          console.log("Text copied to clipboard using Clipboard API.");
+        },
+        function (error) {
+          console.error(
+            "Error copying text to clipboard using Clipboard API:",
+            error
+          );
+        }
+      );
+    }
+
+    console.error("cannot copy");
+
+    return null;
   }
 
   /**

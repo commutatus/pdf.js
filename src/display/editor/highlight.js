@@ -47,8 +47,6 @@ class HighlightEditor extends AnnotationEditor {
 
   #outlineId = null;
 
-  ignoreNextChangeEvent = false;
-
   static _defaultColor = null;
 
   static _defaultOpacity = 1;
@@ -218,7 +216,9 @@ class HighlightEditor extends AnnotationEditor {
   /** @inheritdoc */
   onceAdded() {
     this.parent.addUndoableEditor(this);
-    this.div.focus();
+    if (!this.wasAddedFromApi) {
+      this.div.focus();
+    }
   }
 
   /** @inheritdoc */
@@ -498,6 +498,7 @@ class HighlightEditor extends AnnotationEditor {
     editor.#addToDrawLayer();
     editor.rotate(editor.rotation);
     editor.ignoreNextChangeEvent = true;
+    editor.wasAddedFromApi = true;
 
     return editor;
   }
