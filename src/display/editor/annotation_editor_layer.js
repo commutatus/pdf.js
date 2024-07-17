@@ -28,10 +28,12 @@ import { AnnotationEditor } from "./editor.js";
 import { FreeTextEditor } from "./freetext.js";
 import { HighlightEditor } from "./highlight.js";
 import { InkEditor } from "./ink.js";
+import { LinkNodeEditor } from "./link_node.js";
 import { setLayerDimensions } from "../display_utils.js";
 import { SquareEditor } from "./square.js";
 import { StampEditor } from "./stamp.js";
 import { StrikeoutEditor } from "./strikeout.js";
+import { TempHighlight } from "./temp_highlight.js";
 import { TextEditor } from "./text.js";
 import { UnderlineEditor } from "./underline.js";
 
@@ -86,6 +88,12 @@ class AnnotationEditorLayer {
   #textLayer = null;
 
   #uiManager;
+
+  #textSelectionMode = "annotate";
+
+  #tempHighlight = null;
+
+  #linkNodeParams = null;
 
   static _initialized = false;
 
@@ -157,7 +165,7 @@ class AnnotationEditorLayer {
     this.#cleanup();
     switch (mode) {
       case AnnotationEditorType.NONE:
-        this.disableTextSelection();
+        this.enableTextSelection("generic");
         this.togglePointerEvents(false);
         this.disableClick();
         break;
@@ -198,17 +206,24 @@ class AnnotationEditorLayer {
           mode === editorType._editorType
         );
       }
-      this.div.hidden = false;
     }
+
+    this.div.hidden = false;
   }
 
+  // TODO: Find a better way to do this
+  // Currently it breaks the updateMode state
   afterAnnotationsLoaded() {
     this.#cleanup();
-    this.disableTextSelection();
     this.togglePointerEvents(false);
     this.disableClick();
 
     this.div.hidden = false;
+  }
+
+  // TODO: Call this only once after both loading events
+  afterLinkNodesLoaded() {
+    this.afterAnnotationsLoaded();
   }
 
   #addEditorIfNeeded(isCommitting) {
@@ -313,6 +328,10 @@ class AnnotationEditorLayer {
     this.togglePointerEvents(false);
     const hiddenAnnotationIds = new Set();
     for (const editor of this.#editors.values()) {
+      if (editor.name === "linkNodeEditor") {
+        continue;
+      }
+
       editor.disableEditing();
       if (!editor.annotationElementId || editor.serialize() !== null) {
         hiddenAnnotationIds.add(editor.annotationElementId);
@@ -367,7 +386,9 @@ class AnnotationEditorLayer {
     this.#uiManager.setActiveEditor(editor);
   }
 
-  enableTextSelection() {
+  enableTextSelection(selectionMode = "annotate") {
+    this.#textSelectionMode = selectionMode;
+
     if (this.#textLayer?.div) {
       document.addEventListener("selectstart", this.#boundSelectionStart);
     }
@@ -456,10 +477,12 @@ class AnnotationEditorLayer {
    * Add a new editor in the current view.
    * @param {AnnotationEditor} editor
    */
-  add(editor) {
+  add(editor, isTempHighlight = false) {
     this.changeParent(editor);
-    this.#uiManager.addEditor(editor);
-    this.attach(editor);
+    if (!isTempHighlight) {
+      this.#uiManager.addEditor(editor);
+      this.attach(editor);
+    }
 
     if (!editor.isAttachedToDOM) {
       const div = editor.render();
@@ -470,7 +493,9 @@ class AnnotationEditorLayer {
     // The editor will be correctly moved into the DOM (see fixAndSetPosition).
     editor.fixAndSetPosition();
     editor.onceAdded();
-    this.#uiManager.addToAnnotationStorage(editor);
+    if (!isTempHighlight) {
+      this.#uiManager.addToAnnotationStorage(editor);
+    }
   }
 
   moveEditorInDOM(editor) {
@@ -608,6 +633,12 @@ class AnnotationEditorLayer {
     );
   }
 
+  deserializeLinkNode(data) {
+    return (
+      LinkNodeEditor.deserializeFromJSON(data, this, this.#uiManager) || null
+    );
+  }
+
   /**
    * Create and add a new editor.
    * @param {PointerEvent} event
@@ -703,6 +734,59 @@ class AnnotationEditorLayer {
     );
   }
 
+  removeTempHighlight() {
+    if (!this.#tempHighlight) {
+      return;
+    }
+
+    this.#tempHighlight.remove();
+    this.#tempHighlight = null;
+  }
+
+  addTempHighlight(event, data) {
+    if (this.#textSelectionMode !== "generic") {
+      return;
+    }
+    this.removeTempHighlight();
+
+    const id = this.getNextId();
+    const params = {
+      parent: this,
+      id,
+      x: event.offsetX,
+      y: event.offsetY,
+      uiManager: this.#uiManager,
+      isCentered: false,
+      ...data,
+    };
+
+    this.#linkNodeParams = { ...params };
+
+    const linkNodeHandler = () => {
+      this.#uiManager.dispatchLinkNodeReady();
+    };
+
+    params.linkNodeHandler = linkNodeHandler;
+
+    const editor = new TempHighlight.prototype.constructor(params);
+    this.#tempHighlight = editor;
+    this.add(editor, true);
+  }
+
+  createLinkNode(targetId) {
+    this.removeTempHighlight();
+    const editor = new LinkNodeEditor.prototype.constructor({
+      ...this.#linkNodeParams,
+      targetId,
+    });
+    this.add(editor);
+    this.#linkNodeParams = null;
+  }
+
+  get hasTempHighlight() {
+    return Boolean(this.#tempHighlight);
+  }
+
   /**
    * Called when the user releases the mouse button after having selected
    * some text.
@@ -711,14 +795,17 @@ class AnnotationEditorLayer {
   pointerUpAfterSelection(event) {
     const selection = document.getSelection();
     if (selection.rangeCount === 0) {
+      this.removeTempHighlight();
       return;
     }
     const range = selection.getRangeAt(0);
     if (range.collapsed) {
+      this.removeTempHighlight();
       return;
     }
 
     if (!this.#textLayer?.div.contains(range.commonAncestorContainer)) {
+      this.removeTempHighlight();
       return;
     }
 
@@ -775,12 +862,23 @@ class AnnotationEditorLayer {
       }
       boxes.push(rotator(x, y, width, height));
     }
-    if (boxes.length !== 0) {
+
+    if (this.#textSelectionMode === "generic") {
+      if (boxes.length) {
+        this.addTempHighlight(event, {
+          boxes,
+          text: selection.toString(),
+        });
+      } else {
+        this.removeTempHighlight();
+      }
+    } else if (boxes.length !== 0) {
       this.#createAndAddNewEditor(event, false, {
         boxes,
         text: selection.toString(),
       });
     }
+
     selection.empty();
   }
 
@@ -907,6 +1005,7 @@ class AnnotationEditorLayer {
     // to add a new one which will induce an addition in this.#editors, hence
     // an infinite loop.
     this.#isCleaningUp = true;
+    this.removeTempHighlight();
     for (const editor of this.#editors.values()) {
       if (editor.isEmpty()) {
         editor.remove();

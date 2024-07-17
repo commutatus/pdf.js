@@ -164,6 +164,45 @@ class DrawLayer {
     return { id };
   }
 
+  drawLinkNode({ lineRects, box }, color = "blue") {
+    const id = this.#id++;
+    const root = this.#createSVG(box);
+    root.classList.add("link-node");
+    root.style.color = color;
+
+    let lastY2 = null;
+    for (const rect of lineRects) {
+      const svgRect = DrawLayer._svgFactory.createElement("rect");
+
+      const { x1, y1: originalY1, x2, y2 } = rect;
+
+      // Fix for overlapping rectangles
+      const y1 = lastY2 ? Math.max(lastY2, originalY1) : originalY1;
+      const height = y2 - y1;
+
+      if (height <= 0) {
+        continue;
+      }
+
+      svgRect.setAttribute("x", x1);
+      svgRect.setAttribute("y", y1);
+      svgRect.setAttribute("width", x2 - x1);
+      svgRect.setAttribute("height", height);
+      svgRect.setAttribute("stroke", "currentColor");
+      svgRect.setAttribute("stroke-width", "3px");
+      svgRect.setAttribute("fill", "transparent");
+      svgRect.setAttribute("vector-effect", "non-scaling-stroke");
+
+      root.append(svgRect);
+
+      lastY2 = y2;
+    }
+
+    this.#mapping.set(id, root);
+
+    return { id };
+  }
+
   highlightOutline({ outlines, box }) {
     // We cannot draw the outline directly in the SVG for highlights because
     // it composes with its parent with mix-blend-mode: multiply.
@@ -265,6 +304,22 @@ class DrawLayer {
       root.remove();
     }
     this.#mapping.clear();
+  }
+
+  hide(id) {
+    if (this.#parent === null) {
+      return;
+    }
+    const root = this.#mapping.get(id);
+    root.style.display = "none";
+  }
+
+  show(id) {
+    if (this.#parent === null) {
+      return;
+    }
+    const root = this.#mapping.get(id);
+    root.style.display = "block";
   }
 }
 

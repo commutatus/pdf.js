@@ -212,7 +212,9 @@ class StrikeoutEditor extends AnnotationEditor {
   /** @inheritdoc */
   onceAdded() {
     this.parent.addUndoableEditor(this);
-    this.div.focus();
+    if (!this.wasAddedFromApi) {
+      this.div.focus();
+    }
   }
 
   /** @inheritdoc */
@@ -484,6 +486,7 @@ class StrikeoutEditor extends AnnotationEditor {
     editor.#addToDrawLayer();
     editor.rotate(editor.rotation);
     editor.ignoreNextChangeEvent = true;
+    editor.wasAddedFromApi = true;
 
     return editor;
   }

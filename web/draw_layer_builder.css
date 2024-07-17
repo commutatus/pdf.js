@@ -37,7 +37,8 @@
 
     &.highlight,
     &.underline,
-    &.strikeout {
+    &.strikeout,
+    &.link-node {
       position: absolute;
       fill-rule: evenodd;
     }
