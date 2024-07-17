@@ -1108,6 +1108,11 @@ class AnnotationEditorUIManager {
 
       // Convert to editor
       const editor = annotationEditorLayer.deserializeFromJSON(annotationData);
+
+      if (!editor) {
+        return;
+      }
+
       editor.apiId = id;
       this.#addEditorToLayer(editor);
       layersChanged.add(annotationEditorLayer);
