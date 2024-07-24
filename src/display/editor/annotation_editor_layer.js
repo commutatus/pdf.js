@@ -762,15 +762,12 @@ class AnnotationEditorLayer {
       ...data,
     };
 
-    const highlightParams = {
-      event,
-      isCentered: false,
-      ...data,
-    };
-
     this.#linkNodeParams = { ...params };
 
-    this.#highlightNodeParams = { ...highlightParams };
+    this.#highlightNodeParams = {
+      event,
+      data,
+    };
 
     const linkNodeHandler = () => {
       this.#uiManager.dispatchLinkNodeReady();
@@ -795,8 +792,8 @@ class AnnotationEditorLayer {
 
   createAnnotationNode() {
     this.removeTempHighlight();
-    const { event, isCentered, ...highlightParams } = this.#highlightNodeParams;
-    this.#createAndAddNewEditor(event, isCentered, highlightParams);
+    const { event, data } = this.#highlightNodeParams;
+    this.#createAndAddNewEditor(event, false, data);
     this.#highlightNodeParams = null;
   }
 
