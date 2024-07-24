@@ -269,7 +269,7 @@ class TextEditor extends AnnotationEditor {
     if (!this.isInEditMode()) {
       return;
     }
-
+    this.#setEditorDimensions();
     this.parent.setEditingState(true);
     super.disableEditMode();
     this.overlayDiv.classList.add("enabled");
@@ -361,7 +361,6 @@ class TextEditor extends AnnotationEditor {
 
   #setEditorDimensions() {
     const [parentWidth, parentHeight] = this.parentDimensions;
-
     let rect;
     if (this.isAttachedToDOM) {
       rect = this.div.getBoundingClientRect();
