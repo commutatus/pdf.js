@@ -269,7 +269,6 @@ class TextEditor extends AnnotationEditor {
     if (!this.isInEditMode()) {
       return;
     }
-    this.#setEditorDimensions();
     this.parent.setEditingState(true);
     super.disableEditMode();
     this.overlayDiv.classList.add("enabled");

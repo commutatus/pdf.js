@@ -95,7 +95,7 @@ class AnnotationEditorLayer {
 
   #linkNodeParams = null;
 
-  #highlightNodeParams = null;
+  #highlightSelectionParams = null;
 
   static _initialized = false;
 
@@ -743,6 +743,7 @@ class AnnotationEditorLayer {
 
     this.#tempHighlight.remove();
     this.#tempHighlight = null;
+    this.#highlightSelectionParams = null;
   }
 
   addTempHighlight(event, data) {
@@ -764,7 +765,7 @@ class AnnotationEditorLayer {
 
     this.#linkNodeParams = { ...params };
 
-    this.#highlightNodeParams = {
+    this.#highlightSelectionParams = {
       event,
       data,
     };
@@ -791,10 +792,9 @@ class AnnotationEditorLayer {
   }
 
   createAnnotationNode() {
-    this.removeTempHighlight();
-    const { event, data } = this.#highlightNodeParams;
+    const { event, data } = this.#highlightSelectionParams;
     this.#createAndAddNewEditor(event, false, data);
-    this.#highlightNodeParams = null;
+    this.#highlightSelectionParams = null;
   }
 
   get hasTempHighlight() {
@@ -1019,14 +1019,14 @@ class AnnotationEditorLayer {
     // to add a new one which will induce an addition in this.#editors, hence
     // an infinite loop.
     this.#isCleaningUp = true;
-    if (
-      [
-        AnnotationEditorType.HIGHLIGHT,
-        AnnotationEditorType.UNDERLINE,
-        AnnotationEditorType.STRIKEOUT,
-      ].includes(this.#uiManager.getMode()) &&
-      this.#tempHighlight
-    ) {
+
+    const isHighlightMode = [
+      AnnotationEditorType.HIGHLIGHT,
+      AnnotationEditorType.UNDERLINE,
+      AnnotationEditorType.STRIKEOUT,
+    ].includes(this.#uiManager.getMode());
+
+    if (isHighlightMode && this.#tempHighlight) {
       this.createAnnotationNode();
     }
     this.removeTempHighlight();
