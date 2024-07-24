@@ -95,6 +95,8 @@ class AnnotationEditorLayer {
 
   #linkNodeParams = null;
 
+  #highlightSelectionParams = null;
+
   static _initialized = false;
 
   static #editorTypes = new Map(
@@ -741,6 +743,7 @@ class AnnotationEditorLayer {
 
     this.#tempHighlight.remove();
     this.#tempHighlight = null;
+    this.#highlightSelectionParams = null;
   }
 
   addTempHighlight(event, data) {
@@ -762,6 +765,11 @@ class AnnotationEditorLayer {
 
     this.#linkNodeParams = { ...params };
 
+    this.#highlightSelectionParams = {
+      event,
+      data,
+    };
+
     const linkNodeHandler = () => {
       this.#uiManager.dispatchLinkNodeReady();
     };
@@ -781,6 +789,11 @@ class AnnotationEditorLayer {
     });
     this.add(editor);
     this.#linkNodeParams = null;
+  }
+
+  createAnnotationNode() {
+    const { event, data } = this.#highlightSelectionParams;
+    this.#createAndAddNewEditor(event, false, data);
   }
 
   get hasTempHighlight() {
@@ -1005,6 +1018,16 @@ class AnnotationEditorLayer {
     // to add a new one which will induce an addition in this.#editors, hence
     // an infinite loop.
     this.#isCleaningUp = true;
+
+    const isHighlightMode = [
+      AnnotationEditorType.HIGHLIGHT,
+      AnnotationEditorType.UNDERLINE,
+      AnnotationEditorType.STRIKEOUT,
+    ].includes(this.#uiManager.getMode());
+
+    if (isHighlightMode && this.#tempHighlight) {
+      this.createAnnotationNode();
+    }
     this.removeTempHighlight();
     for (const editor of this.#editors.values()) {
       if (editor.isEmpty()) {
