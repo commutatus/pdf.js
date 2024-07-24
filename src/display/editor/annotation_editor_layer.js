@@ -794,7 +794,6 @@ class AnnotationEditorLayer {
   createAnnotationNode() {
     const { event, data } = this.#highlightSelectionParams;
     this.#createAndAddNewEditor(event, false, data);
-    this.#highlightSelectionParams = null;
   }
 
   get hasTempHighlight() {
