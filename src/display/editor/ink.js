@@ -626,14 +626,14 @@ class InkEditor extends AnnotationEditor {
     this.#fitToContent(/* firstTime = */ true);
     this.select();
 
-    this.parent.addInkEditorIfNeeded(/* isCommitting = */ true);
-
     // When commiting, the position of this editor is changed, hence we must
     // move it to the right position in the DOM.
     this.moveInDOM();
     this.div.focus({
       preventScroll: true /* See issue #15744 */,
     });
+
+    this.parent.resetAnnotationMode();
   }
 
   /** @inheritdoc */

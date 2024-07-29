@@ -303,21 +303,31 @@ class SquareEditor extends AnnotationEditor {
       this.rebuild();
     }
 
-    this._isDraggable = !this.isEmpty();
+    this._isDraggable = this.#isDrawn();
+  }
+
+  #isDrawn() {
+    const rectExists = Boolean(this.rect);
+    const coordsExist =
+      rectExists &&
+      ![
+        this.rect.startX,
+        this.rect.startY,
+        this.rect.endX,
+        this.rect.endY,
+      ].includes(undefined);
+
+    return coordsExist;
   }
 
   /** @inheritdoc */
   isEmpty() {
-    if (
-      !this.rect ||
-      [this.rect.x, this.rect.y, this.rect.endX, this.rect.endY].includes(
-        undefined
-      )
-    ) {
-      return false;
-    }
+    const hasCorrectCoords =
+      this.#isDrawn() &&
+      Math.abs(this.rect.endX - this.rect.startX) > 0 &&
+      Math.abs(this.rect.endY - this.rect.startY) > 0;
 
-    return !(this.rect.endX - this.rect.x && this.rect.endY - this.rect.y);
+    return !hasCorrectCoords;
   }
 
   /**
@@ -475,13 +485,12 @@ class SquareEditor extends AnnotationEditor {
     // This editor must be on top of the main square editor.
     this.setInForeground();
 
+    // TODO: Remove this since we always allow editing
+    // It changes #fitToContent behavior
     this.#disableEditing = true;
-    this.div.classList.add("disabled");
 
     this.#fitToContent(/* firstTime = */ true);
     this.select();
-
-    this.parent.addSquareEditorIfNeeded(/* isCommitting = */ true);
 
     // When commiting, the position of this editor is changed, hence we must
     // move it to the right position in the DOM.
@@ -489,6 +498,8 @@ class SquareEditor extends AnnotationEditor {
     this.div.focus({
       preventScroll: true /* See issue #15744 */,
     });
+
+    this.parent.resetAnnotationMode();
   }
 
   /** @inheritdoc */
@@ -762,19 +773,6 @@ class SquareEditor extends AnnotationEditor {
     const yMax = Math.max(this.rect.startY, this.rect.endY);
 
     return [xMin, yMin, xMax, yMax];
-  }
-
-  /**
-   * Transform and serialize the paths.
-   * @param {number} s - scale factor
-   * @param {number} tx - abscissa of the translation
-   * @param {number} ty - ordinate of the translation
-   * @param {Array<number>} rect - the bounding box of the annotation
-   */
-  #serializePaths(s, tx, ty, rect) {
-    const paths = [];
-
-    return paths;
   }
 
   /**

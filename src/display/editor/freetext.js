@@ -300,7 +300,6 @@ class FreeTextEditor extends AnnotationEditor {
     }
 
     this.parent.setEditingState(false);
-    this.parent.updateToolbar(AnnotationEditorType.FREETEXT);
     super.enableEditMode();
     this.overlayDiv.classList.remove("enabled");
     this.editorDiv.contentEditable = true;
