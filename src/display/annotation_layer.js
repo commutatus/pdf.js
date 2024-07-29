@@ -673,23 +673,6 @@ class AnnotationElement {
   get _isEditable() {
     return false;
   }
-
-  _editOnDoubleClick() {
-    if (!this._isEditable) {
-      return;
-    }
-    const {
-      annotationEditorType: mode,
-      data: { id: editId },
-    } = this;
-    this.container.addEventListener("dblclick", () => {
-      this.linkService.eventBus?.dispatch("switchannotationeditormode", {
-        source: this,
-        mode,
-        editId,
-      });
-    });
-  }
 }
 
 class LinkAnnotationElement extends AnnotationElement {
@@ -2366,8 +2349,6 @@ class FreeTextAnnotationElement extends AnnotationElement {
     if (!this.data.popupRef && this.hasPopupData) {
       this._createPopup();
     }
-
-    this._editOnDoubleClick();
 
     return this.container;
   }

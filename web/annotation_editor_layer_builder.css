@@ -39,6 +39,7 @@
   );
   --editorFreeText-editing-cursor: text;
   --editorText-editing-cursor: crosshair;
+  --editorText-sticky-note-size: 25px;
   /*#if COMPONENTS*/
   --editorInk-editing-cursor: pointer;
   --editorSquare-editing-cursor: crosshair;
@@ -119,13 +120,17 @@
   cursor: var(--editorSquare-editing-cursor);
 }
 
+.textEditor, .squareEditor {
+  /* Enables interaction even when annotation editor layer is disabled */
+  pointer-events: auto;
+}
+
 .textEditor {
   box-shadow: 0px 9px 28px 8px #0000000d;
   border-radius: 8px;
   padding: 0 !important;
 
   .sticky-note-large {
-    --action-bar-height: 20px;
     width: 265px;
     display: none;
     border-radius: inherit;
@@ -135,7 +140,7 @@
     }
 
     .sticky-note-action-bar {
-      height: var(--action-bar-height);
+      height: var(--editorText-sticky-note-size);
       border-radius: inherit;
     }
 
@@ -206,8 +211,8 @@
   .sticky-note-small {
     box-shadow: 0px 2px 4px 0px #00000005;
 
-    width: 25px;
-    height: 25px;
+    width: var(--editorText-sticky-note-size);
+    height: var(--editorText-sticky-note-size);
     display: none;
 
     &.show {
@@ -230,10 +235,6 @@
   max-width: 100%;
   max-height: 100%;
   border: var(--unfocus-outline);
-
-  &.draggable.selectedEditor {
-    cursor: move;
-  }
 
   &.selectedEditor {
     border: var(--focus-outline);
@@ -275,6 +276,13 @@
       inset: 0;
       border: var(--focus-outline-around);
     }
+  }
+}
+
+.annotationEditorLayer
+  :is(.freeTextEditor, .inkEditor, .squareEditor, .stampEditor) {
+  &.draggable.selectedEditor {
+    cursor: move;
   }
 }
 
@@ -661,7 +669,6 @@
   user-select: none;
 }
 
-.annotationEditorLayer .textEditor .overlay,
 .annotationEditorLayer .freeTextEditor .overlay {
   position: absolute;
   display: none;
@@ -671,9 +678,20 @@
   height: 100%;
 }
 
-.annotationEditorLayer .textEditor .overlay.enabled,
 .annotationEditorLayer .freeTextEditor .overlay.enabled {
   display: block;
+}
+
+.annotationEditorLayer .textEditor .overlay {
+  position: absolute;
+  display: block;
+  background: transparent;
+  inset: 0;
+  width: 100%;
+  height: var(--editorText-sticky-note-size);
+  cursor: move;
+  max-width: calc(100% - var(--editorText-sticky-note-size));
+  min-width: var(--editorText-sticky-note-size);
 }
 
 .annotationEditorLayer .textEditor .internal:empty::before,

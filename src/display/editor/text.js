@@ -41,8 +41,6 @@ class TextEditor extends AnnotationEditor {
 
   #boundEditorDivFocus = this.editorDivFocus.bind(this);
 
-  #boundEditorDivInput = this.editorDivInput.bind(this);
-
   #boundEditorDivKeydown = this.editorDivKeydown.bind(this);
 
   #boundCopyContentsToClipboard = this.copyContentsToClipboard.bind(this);
@@ -252,16 +250,12 @@ class TextEditor extends AnnotationEditor {
     }
 
     this.parent.setEditingState(false);
-    this.parent.updateToolbar(AnnotationEditorType.TEXT);
     super.enableEditMode();
-    this.overlayDiv.classList.remove("enabled");
     this.editorDiv.contentEditable = true;
-    this._isDraggable = false;
     this.div.removeAttribute("aria-activedescendant");
     this.editorDiv.addEventListener("keydown", this.#boundEditorDivKeydown);
     this.editorDiv.addEventListener("focus", this.#boundEditorDivFocus);
     this.editorDiv.addEventListener("blur", this.#boundEditorDivBlur);
-    this.editorDiv.addEventListener("input", this.#boundEditorDivInput);
   }
 
   /** @inheritdoc */
@@ -271,14 +265,11 @@ class TextEditor extends AnnotationEditor {
     }
     this.parent.setEditingState(true);
     super.disableEditMode();
-    this.overlayDiv.classList.add("enabled");
     this.editorDiv.contentEditable = false;
     this.div.setAttribute("aria-activedescendant", this.#editorDivId);
-    this._isDraggable = true;
     this.editorDiv.removeEventListener("keydown", this.#boundEditorDivKeydown);
     this.editorDiv.removeEventListener("focus", this.#boundEditorDivFocus);
     this.editorDiv.removeEventListener("blur", this.#boundEditorDivBlur);
-    this.editorDiv.removeEventListener("input", this.#boundEditorDivInput);
 
     // On Chrome, the focus is given to <body> when contentEditable is set to
     // false, hence we focus the div.
@@ -288,7 +279,17 @@ class TextEditor extends AnnotationEditor {
 
     // In case the blur callback hasn't been called.
     this.isEditing = false;
-    this.parent.div.classList.add("textEditing");
+  }
+
+  setupOverlayDragEvents() {
+    this.overlayDiv.addEventListener("mouseover", () => {
+      this.parent.setSelected(this);
+      this._isDraggable = true;
+    });
+
+    this.overlayDiv.addEventListener("mouseout", () => {
+      this._isDraggable = false;
+    });
   }
 
   /** @inheritdoc */
@@ -337,7 +338,6 @@ class TextEditor extends AnnotationEditor {
     this.isEditing = false;
     if (this.parent) {
       this.parent.setEditingState(true);
-      this.parent.div.classList.add("textEditing");
     }
     super.remove();
   }
@@ -475,10 +475,6 @@ class TextEditor extends AnnotationEditor {
 
   editorDivBlur(event) {
     this.isEditing = false;
-  }
-
-  editorDivInput(event) {
-    this.parent.div.classList.toggle("textEditing", this.isEmpty());
   }
 
   /** @inheritdoc */
@@ -619,6 +615,7 @@ class TextEditor extends AnnotationEditor {
 
     this.overlayDiv = document.createElement("div");
     this.overlayDiv.classList.add("overlay", "enabled");
+    this.setupOverlayDragEvents();
     this.div.append(this.overlayDiv);
 
     // The goal is to sanitize and have something suitable for this

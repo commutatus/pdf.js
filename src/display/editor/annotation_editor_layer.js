@@ -155,8 +155,8 @@ class AnnotationEditorLayer {
    * Update the toolbar if it's required to reflect the tool currently used.
    * @param {number} mode
    */
-  updateToolbar(mode) {
-    this.#uiManager.updateToolbar(mode);
+  updateModeAndToolbar(mode) {
+    this.#uiManager.updateModeAndToolbar(mode);
   }
 
   /**
@@ -228,12 +228,12 @@ class AnnotationEditorLayer {
     this.afterAnnotationsLoaded();
   }
 
-  #addEditorIfNeeded(isCommitting) {
+  #addEditorIfNeeded(isCommitting, editorName = "squareEditor") {
     if (!isCommitting) {
       // We're removing an editor but an empty one can already exist so in this
       // case we don't need to create a new one.
       for (const editor of this.#editors.values()) {
-        if (editor.isEmpty()) {
+        if (editor.isEmpty() && editor.name === editorName) {
           editor.setInBackground();
           return;
         }
@@ -253,7 +253,7 @@ class AnnotationEditorLayer {
       return;
     }
 
-    this.#addEditorIfNeeded(isCommitting);
+    this.#addEditorIfNeeded(isCommitting, "inkEditor");
   }
 
   addSquareEditorIfNeeded(isCommitting) {
@@ -262,7 +262,7 @@ class AnnotationEditorLayer {
       return;
     }
 
-    this.#addEditorIfNeeded(isCommitting);
+    this.#addEditorIfNeeded(isCommitting, "squareEditor");
   }
 
   /**
@@ -303,7 +303,12 @@ class AnnotationEditorLayer {
       return;
     }
 
+    /**
+     * TODO: Remove this feature completely
+     * pdf.js has internal support for editing freeText annotations
+     */
     const editables = this.#annotationLayer.getEditableAnnotations();
+    const disabled = true;
     for (const editable of editables) {
       // The element must be hidden whatever its state is.
       editable.hide();
@@ -314,7 +319,7 @@ class AnnotationEditorLayer {
         continue;
       }
       const editor = this.deserialize(editable);
-      if (!editor) {
+      if (disabled || !editor) {
         continue;
       }
       this.addOrRebuild(editor);
@@ -334,7 +339,6 @@ class AnnotationEditorLayer {
         continue;
       }
 
-      editor.disableEditing();
       if (!editor.annotationElementId || editor.serialize() !== null) {
         hiddenAnnotationIds.add(editor.annotationElementId);
         continue;
@@ -498,6 +502,22 @@ class AnnotationEditorLayer {
     if (!isTempHighlight) {
       this.#uiManager.addToAnnotationStorage(editor);
     }
+
+    /**
+     * These editors have different lifecycle where annotation is added
+     * instantly but reshaped later on
+     * We don't want to reset the annotation mode until the shape is final
+     * and then call "resetAnnotationMode" manually in the "commit" function
+     */
+    if (!["squareEditor", "inkEditor"].includes(editor.name)) {
+      this.resetAnnotationMode();
+    }
+  }
+
+  resetAnnotationMode() {
+    if (this.#uiManager.getMode() !== AnnotationEditorType.NONE) {
+      this.#uiManager.updateModeAndToolbar(AnnotationEditorType.NONE);
+    }
   }
 
   moveEditorInDOM(editor) {
@@ -595,9 +615,6 @@ class AnnotationEditorLayer {
    * @param {Object} params
    */
   pasteEditor(mode, params) {
-    this.#uiManager.updateToolbar(mode);
-    this.#uiManager.updateMode(mode);
-
     const { offsetX, offsetY } = this.#getCenterPoint();
     const id = this.getNextId();
     const editor = this.#createNewEditor({

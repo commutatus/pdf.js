@@ -1377,10 +1377,9 @@ class AnnotationEditorUIManager {
    * @param {number} mode
    * @returns {undefined}
    */
-  updateToolbar(mode) {
-    if (mode === this.#mode) {
-      return;
-    }
+  updateModeAndToolbar(mode) {
+    this.updateMode(mode);
+
     this._eventBus.dispatch("switchannotationeditormode", {
       source: this,
       mode,
@@ -1453,7 +1452,6 @@ class AnnotationEditorUIManager {
    * Disable all the layers.
    */
   #disableAll() {
-    this.unselectAll();
     if (this.#isEnabled) {
       this.#isEnabled = false;
       for (const layer of this.#allLayers.values()) {
