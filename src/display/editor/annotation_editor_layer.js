@@ -819,10 +819,10 @@ class AnnotationEditorLayer {
       this.#highlightSelectionParams = null;
     } else {
       const editor = new HighlightEditor.prototype.constructor({
-        ...this.#highlightSelectionParams,
+        ...this.#linkNodeParams,
       });
       this.add(editor);
-      this.#highlightSelectionParams = null;
+      this.#linkNodeParams = null;
     }
   }
 
