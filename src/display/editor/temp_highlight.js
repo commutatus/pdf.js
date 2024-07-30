@@ -45,6 +45,8 @@ class TempHighlight extends AnnotationEditor {
 
   #linkNodeHandler = null;
 
+  #highlightHandler = null;
+
   static _l10nPromise;
 
   constructor(params) {
@@ -54,7 +56,7 @@ class TempHighlight extends AnnotationEditor {
     this.disableToolbar = true;
     this.#selectedText = params.text;
     this.#linkNodeHandler = params.linkNodeHandler;
-
+    this.#highlightHandler = params.highlightHandler;
     if (this.#boxes) {
       this.#createOutlines();
       this.#addToDrawLayer();
@@ -113,6 +115,7 @@ class TempHighlight extends AnnotationEditor {
       this.#actionsMenu.render({
         copyAction: this.copyText.bind(this),
         linkNodeAction: this.#linkNodeHandler,
+        highlightAction: this.#highlightHandler,
       })
     );
     this.#actionsMenu.show();

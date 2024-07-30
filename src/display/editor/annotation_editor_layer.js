@@ -792,7 +792,10 @@ class AnnotationEditorLayer {
     };
 
     params.linkNodeHandler = linkNodeHandler;
-
+    params.highlightHandler = () => {
+      this.createAnnotationNode();
+      this.removeTempHighlight();
+    };
     const editor = new TempHighlight.prototype.constructor(params);
     this.#tempHighlight = editor;
     this.add(editor, true);
@@ -809,8 +812,18 @@ class AnnotationEditorLayer {
   }
 
   createAnnotationNode() {
-    const { event, data } = this.#highlightSelectionParams;
-    this.#createAndAddNewEditor(event, false, data);
+    const editorType = this.#currentEditorType;
+    if (editorType) {
+      const { event, data } = this.#highlightSelectionParams;
+      this.#createAndAddNewEditor(event, false, data);
+      this.#highlightSelectionParams = null;
+    } else {
+      const editor = new HighlightEditor.prototype.constructor({
+        ...this.#highlightSelectionParams,
+      });
+      this.add(editor);
+      this.#highlightSelectionParams = null;
+    }
   }
 
   get hasTempHighlight() {

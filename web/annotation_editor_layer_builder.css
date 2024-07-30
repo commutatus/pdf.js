@@ -540,7 +540,7 @@
     --action-bar-height: 28px;
     --action-bar-padding: 4px;
 
-    font-size: 14px;
+    font-size: 14px !important;
     color: black;
 
     @media (prefers-color-scheme: dark) {
@@ -645,6 +645,9 @@
           outline: 2px solid var(--action-bar-focus-outline-color);
         }
       }
+    }
+    .highlight-menu-item svg {
+      width: 14px;
     }
   }
 }
