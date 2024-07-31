@@ -13,7 +13,11 @@
  * limitations under the License.
  */
 
-import { copyIconSVG, partitionOutlinedSVG } from "../../images/svgIcons.js";
+import {
+  copyIconSVG,
+  highLightSVG,
+  partitionOutlinedSVG,
+} from "../../images/svgIcons.js";
 import { noContextMenu } from "../display_utils.js";
 
 class ActionsMenu {
@@ -27,7 +31,7 @@ class ActionsMenu {
     this.#editor = editor;
   }
 
-  render({ copyAction, linkNodeAction }) {
+  render({ copyAction, linkNodeAction, highlightAction }) {
     const actionsMenu = (this.#menu = document.createElement("div"));
     actionsMenu.className = "actionsMenuBar";
     actionsMenu.addEventListener("contextmenu", noContextMenu);
@@ -48,7 +52,7 @@ class ActionsMenu {
       style.top = `calc(${100 * position[1]}% + var(--action-bar-vert-offset))`;
     }
 
-    this.#addActionButtons({ copyAction, linkNodeAction });
+    this.#addActionButtons({ copyAction, linkNodeAction, highlightAction });
 
     return actionsMenu;
   }
@@ -90,7 +94,7 @@ class ActionsMenu {
     this.#menu.classList.remove("hidden");
   }
 
-  #addActionButtons({ copyAction, linkNodeAction }) {
+  #addActionButtons({ copyAction, linkNodeAction, highlightAction }) {
     const copyButton = document.createElement("div");
     copyButton.innerHTML = `${copyIconSVG} Copy Text`;
     this.#addListenersToElement(copyButton);
@@ -101,8 +105,15 @@ class ActionsMenu {
     this.#addListenersToElement(linkNodeButton);
     linkNodeButton.addEventListener("click", linkNodeAction);
 
+    const highlightButton = document.createElement("div");
+    highlightButton.className = "highlight-menu-item";
+    highlightButton.innerHTML = `${highLightSVG} Highlight`;
+    this.#addListenersToElement(highlightButton);
+    highlightButton.addEventListener("click", highlightAction);
+
     this.#buttons.append(copyButton);
     this.#buttons.append(linkNodeButton);
+    this.#buttons.append(highlightButton);
   }
 
   remove() {
