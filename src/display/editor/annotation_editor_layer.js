@@ -816,7 +816,6 @@ class AnnotationEditorLayer {
     if (editorType) {
       const { event, data } = this.#highlightSelectionParams;
       this.#createAndAddNewEditor(event, false, data);
-      this.#highlightSelectionParams = null;
     } else {
       const editor = new HighlightEditor.prototype.constructor({
         ...this.#linkNodeParams,
