@@ -248,7 +248,7 @@ class TextEditor extends AnnotationEditor {
     if (this.isInEditMode()) {
       return;
     }
-
+    this.#setEditorDimensions();
     this.parent.setEditingState(false);
     super.enableEditMode();
     this.editorDiv.contentEditable = true;
