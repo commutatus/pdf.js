@@ -508,8 +508,17 @@ class AnnotationEditorLayer {
      * instantly but reshaped later on
      * We don't want to reset the annotation mode until the shape is final
      * and then call "resetAnnotationMode" manually in the "commit" function
+     * For highlight annotations mode is turned off manually
      */
-    if (!["squareEditor", "inkEditor"].includes(editor.name)) {
+    if (
+      ![
+        AnnotationEditorType.SQUARE,
+        AnnotationEditorType.INK,
+        AnnotationEditorType.HIGHLIGHT,
+        AnnotationEditorType.UNDERLINE,
+        AnnotationEditorType.STRIKEOUT,
+      ].includes(editor.constructor._editorType)
+    ) {
       this.resetAnnotationMode();
     }
   }
