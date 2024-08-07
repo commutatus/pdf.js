@@ -65,22 +65,13 @@ function getViewerConfiguration() {
       editorHighlightParamsToolbar: document.getElementById(
         "editorHighlightParamsToolbar"
       ),
-      editorHighlightColorPicker: document.getElementById(
-        "editorHighlightColorPicker"
-      ),
       editorUnderlineButton: document.getElementById("editorUnderline"),
       editorUnderlineParamsToolbar: document.getElementById(
         "editorUnderlineParamsToolbar"
       ),
-      editorUnderlineColorPicker: document.getElementById(
-        "editorUnderlineColorPicker"
-      ),
       editorStrikeoutButton: document.getElementById("editorStrikeout"),
       editorStrikeoutParamsToolbar: document.getElementById(
         "editorStrikeoutParamsToolbar"
-      ),
-      editorStrikeoutColorPicker: document.getElementById(
-        "editorStrikeoutColorPicker"
       ),
       editorInkButton: document.getElementById("editorInk"),
       editorInkParamsToolbar: document.getElementById("editorInkParamsToolbar"),
@@ -178,14 +169,6 @@ function getViewerConfiguration() {
         pageSize: document.getElementById("pageSizeField"),
         linearized: document.getElementById("linearizedField"),
       },
-    },
-    altTextDialog: {
-      dialog: document.getElementById("altTextDialog"),
-      optionDescription: document.getElementById("descriptionButton"),
-      optionDecorative: document.getElementById("decorativeButton"),
-      textarea: document.getElementById("descriptionTextarea"),
-      cancelButton: document.getElementById("altTextCancel"),
-      saveButton: document.getElementById("altTextSave"),
     },
     annotationEditorParams: {
       editorFreeTextFontSize: document.getElementById("editorFreeTextFontSize"),

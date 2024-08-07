@@ -28,7 +28,6 @@ import {
   shadow,
   unreachable,
 } from "../../shared/util.js";
-import { AltText } from "./alt_text.js";
 import { EditorToolbar } from "./toolbar.js";
 import { noContextMenu } from "../display_utils.js";
 
@@ -46,8 +45,6 @@ import { noContextMenu } from "../display_utils.js";
  */
 class AnnotationEditor {
   #allResizerDivs = null;
-
-  #altText = null;
 
   #keepAspectRatio = false;
 
@@ -155,7 +152,7 @@ class AnnotationEditor {
     this._willKeepAspectRatio = false;
     this._initialOptions.isCentered = parameters.isCentered;
     this._structTreeParentId = null;
-    this.apiId = getUuid();
+    this.apiId = "api-annotation-" + getUuid();
     this.selectedText = parameters.text;
 
     const {
@@ -207,9 +204,6 @@ class AnnotationEditor {
   static initialize(l10n, options = null) {
     AnnotationEditor._l10nPromise ||= new Map(
       [
-        "pdfjs-editor-alt-text-button-label",
-        "pdfjs-editor-alt-text-edit-button-label",
-        "pdfjs-editor-alt-text-decorative-tooltip",
         "pdfjs-editor-resizer-label-topLeft",
         "pdfjs-editor-resizer-label-topMiddle",
         "pdfjs-editor-resizer-label-topRight",
@@ -710,8 +704,6 @@ class AnnotationEditor {
       return;
     }
 
-    this.#altText?.toggle(false);
-
     const boundResizerPointermove = this.#resizerPointermove.bind(this, name);
     const savedDraggable = this._isDraggable;
     this._isDraggable = false;
@@ -733,7 +725,6 @@ class AnnotationEditor {
 
     const pointerUpCallback = () => {
       this.parent.togglePointerEvents(true);
-      this.#altText?.toggle(true);
       this._isDraggable = savedDraggable;
       window.removeEventListener("pointerup", pointerUpCallback);
       window.removeEventListener("blur", pointerUpCallback);
@@ -918,23 +909,16 @@ class AnnotationEditor {
     this.fixAndSetPosition();
   }
 
-  altTextFinish() {
-    this.#altText?.finish();
-  }
-
   /**
    * Add a toolbar for this editor.
    * @returns {Promise<EditorToolbar|null>}
    */
-  async addEditToolbar() {
+  async addEditToolbar(props = {}) {
     if (this.#editToolbar || this.#isInEditMode) {
       return this.#editToolbar;
     }
     this.#editToolbar = new EditorToolbar(this);
-    this.div.append(this.#editToolbar.render());
-    if (this.#altText) {
-      this.#editToolbar.addAltTextButton(await this.#altText.render());
-    }
+    this.div.append(this.#editToolbar.render(props));
 
     return this.#editToolbar;
   }
@@ -945,37 +929,10 @@ class AnnotationEditor {
     }
     this.#editToolbar.remove();
     this.#editToolbar = null;
-
-    // We destroy the alt text but we don't null it because we want to be able
-    // to restore it in case the user undoes the deletion.
-    this.#altText?.destroy();
   }
 
   getClientDimensions() {
     return this.div.getBoundingClientRect();
-  }
-
-  async addAltTextButton() {
-    if (this.#altText) {
-      return;
-    }
-    AltText.initialize(AnnotationEditor._l10nPromise);
-    this.#altText = new AltText(this);
-    await this.addEditToolbar();
-  }
-
-  get altTextData() {
-    return this.#altText?.data;
-  }
-
-  /**
-   * Set the alt text data.
-   */
-  set altTextData(data) {
-    if (!this.#altText) {
-      return;
-    }
-    this.#altText.data = data;
   }
 
   /**
@@ -1038,8 +995,6 @@ class AnnotationEditor {
   // Note: Multi select is disabled
   #selectOnPointerEvent() {
     this.parent.setSelected(this);
-
-    this.updateGlobalParams();
   }
 
   #setUpDragSession(event) {
@@ -1509,27 +1464,6 @@ class AnnotationEditor {
     this.#editToolbar?.hide();
   }
 
-  async copyToClipboard(text) {
-    if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
-      // Clipboard API method
-      return navigator.clipboard.writeText(text).then(
-        function () {
-          console.log("Text copied to clipboard using Clipboard API.");
-        },
-        function (error) {
-          console.error(
-            "Error copying text to clipboard using Clipboard API:",
-            error
-          );
-        }
-      );
-    }
-
-    console.error("cannot copy");
-
-    return null;
-  }
-
   /**
    * Update some parameters which have been changed through the UI.
    * @param {number} type
@@ -1556,18 +1490,6 @@ class AnnotationEditor {
 
   get localParams() {
     return {};
-  }
-
-  updateGlobalParams() {
-    const mapping = this.localParams;
-    this._uiManager.updateGlobalParams(this, mapping);
-  }
-
-  /**
-   * @returns {HTMLElement | null} the element requiring an alt text.
-   */
-  getImageForAltText() {
-    return null;
   }
 
   /**

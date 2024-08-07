@@ -195,6 +195,22 @@ class SquareEditor extends AnnotationEditor {
     });
   }
 
+  async addEditToolbar() {
+    const props = {
+      onColorSelect: this.#updateColor.bind(this),
+      onOpacitySelect: this.#updateOpacity.bind(this),
+      initialColor: this.color,
+      initialOpacity: this.opacity * 100,
+    };
+
+    const toolbar = await super.addEditToolbar(props);
+    if (!toolbar) {
+      return null;
+    }
+
+    return toolbar;
+  }
+
   /** @inheritdoc */
   rebuild() {
     if (!this.parent) {

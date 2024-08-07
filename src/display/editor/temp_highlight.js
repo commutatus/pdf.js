@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 
-import { ActionsMenu } from "./actions_menu.js";
 import { AnnotationEditor } from "./editor.js";
 import { bindEvents } from "./tools.js";
 import { Outliner } from "./outliner.js";
@@ -39,8 +38,6 @@ class TempHighlight extends AnnotationEditor {
 
   #opacity = "0.2";
 
-  #actionsMenu = null;
-
   #selectedText = null;
 
   #linkNodeHandler = null;
@@ -53,7 +50,6 @@ class TempHighlight extends AnnotationEditor {
     super({ ...params, name: "tempHighlightEditor" });
     this.#boxes = params.boxes || null;
     this._isDraggable = false;
-    this.disableToolbar = true;
     this.#selectedText = params.text;
     this.#linkNodeHandler = params.linkNodeHandler;
     this.#highlightHandler = params.highlightHandler;
@@ -94,31 +90,28 @@ class TempHighlight extends AnnotationEditor {
     AnnotationEditor.initialize(l10n);
   }
 
-  /** @inheritdoc */
-  get actionsMenuPosition() {
-    return this.#lastPoint;
-  }
-
-  copyText() {
-    this.copyToClipboard(this.#selectedText).then(() => {
+  async addEditToolbar() {
+    const afterCopyText = () => {
       this.parent.removeTempHighlight();
-    });
-  }
+    };
 
-  async addActionsMenu() {
-    if (this.#actionsMenu) {
-      return;
+    const props = {
+      text: this.#selectedText,
+      afterCopyText,
+      onAddLinkNode: this.#linkNodeHandler,
+      onCreateHighlight: this.#highlightHandler,
+    };
+
+    const toolbar = await super.addEditToolbar(props);
+    if (!toolbar) {
+      return null;
     }
 
-    this.#actionsMenu = new ActionsMenu(this);
-    this.div.append(
-      this.#actionsMenu.render({
-        copyAction: this.copyText.bind(this),
-        linkNodeAction: this.#linkNodeHandler,
-        highlightAction: this.#highlightHandler,
-      })
-    );
-    this.#actionsMenu.show();
+    return toolbar;
+  }
+
+  get toolbarPosition() {
+    return this.#lastPoint;
   }
 
   /** @inheritdoc */
@@ -142,14 +135,9 @@ class TempHighlight extends AnnotationEditor {
     this.div.focus();
   }
 
-  removeActionsMenu() {
-    this.#actionsMenu.remove();
-  }
-
   /** @inheritdoc */
   remove() {
     super.remove();
-    this.removeActionsMenu();
     this.#cleanDrawLayer();
   }
 
@@ -276,8 +264,6 @@ class TempHighlight extends AnnotationEditor {
 
     bindEvents(this, this.#highlightDiv, ["pointerover", "pointerleave"]);
     this.enableEditing();
-
-    this.addActionsMenu();
 
     return div;
   }
