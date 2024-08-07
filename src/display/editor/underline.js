@@ -20,14 +20,16 @@ import { HighlightEditor } from "./highlight.js";
  * Basic draw editor in order to generate an Underline annotation.
  */
 class UnderlineEditor extends HighlightEditor {
-  _displayMode = AnnotationEditorType.UNDERLINE;
-
   static _type = "underline";
 
   static _editorType = AnnotationEditorType.UNDERLINE;
 
   constructor(params) {
-    super({ ...params, name: "underlineEditor" });
+    super({
+      displayMode: AnnotationEditorType.UNDERLINE,
+      ...params,
+      name: "underlineEditor",
+    });
   }
 }
 

@@ -20,14 +20,16 @@ import { HighlightEditor } from "./highlight.js";
  * Basic draw editor in order to generate an Strikeout/Strikethrough annotation.
  */
 class StrikeoutEditor extends HighlightEditor {
-  _displayMode = AnnotationEditorType.STRIKEOUT;
-
   static _type = "strikeout";
 
   static _editorType = AnnotationEditorType.STRIKEOUT;
 
   constructor(params) {
-    super({ ...params, name: "strikeoutEditor" });
+    super({
+      displayMode: AnnotationEditorType.STRIKEOUT,
+      ...params,
+      name: "strikeoutEditor",
+    });
   }
 }
 
