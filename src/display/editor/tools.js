@@ -1649,40 +1649,40 @@ class AnnotationEditorUIManager {
     });
   }
 
+  sendSerializedEditor = editor => {
+    if (!editor.serializeToJSON) {
+      return;
+    }
+
+    if (editor.ignoreNextChangeEvent) {
+      editor.ignoreNextChangeEvent = false;
+      return;
+    }
+
+    if (editor.name === "linkNodeEditor") {
+      // Link nodes cannot be updated, only added or removed
+      if (!editor?.div?.classList?.contains?.("hidden")) {
+        this.#visibleLinkNodes.push(editor);
+        this.#dispatchVisibleLinkNodeDivs();
+      }
+    } else {
+      this._eventBus.dispatch("com_annotationupdated", {
+        serialized: editor.serializeToJSON(),
+        id: editor.apiId,
+      });
+    }
+  };
+
   #bindChangeEmitter(params, editors) {
     if (!editors) {
       return;
     }
 
-    const sendSerializedEditor = editor => {
-      if (!editor.serializeToJSON) {
-        return;
-      }
-
-      if (editor.ignoreNextChangeEvent) {
-        editor.ignoreNextChangeEvent = false;
-        return;
-      }
-
-      if (editor.name === "linkNodeEditor") {
-        // Link nodes cannot be updated, only added or removed
-        if (!editor?.div?.classList?.contains?.("hidden")) {
-          this.#visibleLinkNodes.push(editor);
-          this.#dispatchVisibleLinkNodeDivs();
-        }
-      } else {
-        this._eventBus.dispatch("com_annotationupdated", {
-          serialized: editor.serializeToJSON(),
-          id: editor.apiId,
-        });
-      }
-    };
-
     const signalChange = () => {
       if (Array.isArray(editors)) {
-        editors.forEach(e => sendSerializedEditor(e));
+        editors.forEach(editor => this.sendSerializedEditor(editor));
       } else {
-        sendSerializedEditor(editors);
+        this.sendSerializedEditor(editors);
       }
     };
 

@@ -23,8 +23,6 @@ class Outliner {
   // Used for underlines and strikethroughs/strikeouts
   #lineRects = [];
 
-  parent = null;
-
   /**
    * Construct an outliner.
    * @param {Array<Object>} boxes - An array of axis-aligned rectangles.
@@ -42,7 +40,7 @@ class Outliner {
     borderWidth = 0,
     innerMargin = 0,
     isLTR = true,
-    parent = null
+    skipLineRects
   ) {
     let minX = Infinity;
     let maxX = -Infinity;
@@ -50,7 +48,6 @@ class Outliner {
     let maxY = -Infinity;
     // Group all lines by where the base of the line is
     let lineByBaseHeight = {};
-    this.parent = parent;
 
     // We round the coordinates to slightly reduce the number of edges in the
     // final outlines.
@@ -113,9 +110,13 @@ class Outliner {
       lastPoint,
     };
 
+    if (skipLineRects) {
+      return;
+    }
+
     // Merge similar underlines with small y difference
     const lineKeys = Object.keys(lineByBaseHeight);
-    if (this?.parent?.name === "underlineEditor" && lineKeys.length) {
+    if (lineKeys.length) {
       const sortedYValues = Object.keys(lineByBaseHeight).sort(
         (a, b) => +a - +b
       );
@@ -287,7 +288,7 @@ class Outliner {
       }
       outline.push(lastPointX, lastPointY);
     }
-    return { outlines, box: this.#box };
+    return { outlines, box: this.#box, lineRects: this.#lineRects };
   }
 
   #binarySearch(y) {

@@ -41,7 +41,7 @@ class EditorToolbar {
         100 * position[1]
       }% + var(--editor-toolbar-vert-offset))`;
     } else {
-      const rectangleDropdownWidth = 122;
+      const rectangleDropdownWidth = 204;
       style.insetInlineEnd = `calc(50% - ${Math.floor(rectangleDropdownWidth / 2)}px)`;
       style.top = "calc(100% + var(--editor-toolbar-vert-offset))";
     }
