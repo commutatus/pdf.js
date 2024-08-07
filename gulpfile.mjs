@@ -255,7 +255,6 @@ function createWebpackConfig(
     "display-node_utils": "src/display/stubs.js",
   };
   const viewerAlias = {
-    "web-alt_text_manager": "web/alt_text_manager.js",
     "web-annotation_editor_params": "web/annotation_editor_params.js",
     "web-com": "",
     "web-l10n_utils": "web/stubs.js",
@@ -1077,7 +1076,6 @@ function buildComponents(defines, dir) {
   const COMPONENTS_IMAGES = [
     "web/images/annotation-*.svg",
     "web/images/loading-icon.gif",
-    "web/images/altText_*.svg",
     "web/images/editor-toolbar-*.svg",
     "web/images/toolbarButton-menuArrow.svg",
   ];
@@ -2146,7 +2144,7 @@ gulp.task(
 );
 
 function packageJson() {
-  const VERSION = "5.0.27";
+  const VERSION = "5.0.28";
 
   const DIST_NAME = "@commutatus/pdfjs-dist";
   const DIST_DESCRIPTION = "Experimental build of Mozilla's PDF.js library.";

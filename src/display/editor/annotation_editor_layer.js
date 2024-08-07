@@ -23,7 +23,11 @@
 /** @typedef {import("../annotation_layer.js").AnnotationLayer} AnnotationLayer */
 /** @typedef {import("../draw_layer.js").DrawLayer} DrawLayer */
 
-import { AnnotationEditorType, FeatureTest } from "../../shared/util.js";
+import {
+  AnnotationEditorType,
+  FeatureTest,
+  getUuid,
+} from "../../shared/util.js";
 import { AnnotationEditor } from "./editor.js";
 import { FreeTextEditor } from "./freetext.js";
 import { HighlightEditor } from "./highlight.js";
@@ -778,10 +782,8 @@ class AnnotationEditorLayer {
     }
     this.removeTempHighlight();
 
-    const id = this.getNextId();
     const params = {
       parent: this,
-      id,
       x: event.offsetX,
       y: event.offsetY,
       uiManager: this.#uiManager,
@@ -801,11 +803,19 @@ class AnnotationEditorLayer {
     };
 
     params.linkNodeHandler = linkNodeHandler;
-    params.highlightHandler = () => {
-      this.createAnnotationNode();
+    params.highlightHandler = ({ color, type }) => {
+      this.createAnnotationNode({ color, type });
       this.removeTempHighlight();
     };
-    const editor = new TempHighlight.prototype.constructor(params);
+
+    // Use getUuid instead of getNextId to avoid duplicate ID when temp
+    // highlight is converted to a highlight/underline annotation
+    // This ID is used CSS selctor so it should not start with number
+    const id = "temp-highlight-" + getUuid();
+    const editor = new TempHighlight.prototype.constructor({
+      ...params,
+      id,
+    });
     this.#tempHighlight = editor;
     this.add(editor, true);
   }
@@ -814,22 +824,33 @@ class AnnotationEditorLayer {
     this.removeTempHighlight();
     const editor = new LinkNodeEditor.prototype.constructor({
       ...this.#linkNodeParams,
+      id: "link-node-" + getUuid(),
       targetId,
     });
     this.add(editor);
     this.#linkNodeParams = null;
   }
 
-  createAnnotationNode() {
+  createAnnotationNode({
+    color = null,
+    type = AnnotationEditorType.HIGHLIGHT,
+  } = {}) {
     const editorType = this.#currentEditorType;
     if (editorType) {
       const { event, data } = this.#highlightSelectionParams;
       this.#createAndAddNewEditor(event, false, data);
     } else {
-      const editor = new HighlightEditor.prototype.constructor({
-        ...this.#linkNodeParams,
-      });
-      this.add(editor);
+      const editorClass = AnnotationEditorLayer.#editorTypes.get(type);
+      if (editorClass) {
+        const id = this.getNextId();
+        const editor = new editorClass.prototype.constructor({
+          // TODO: Use highlightSelectionParams only
+          ...this.#linkNodeParams,
+          id,
+          color,
+        });
+        this.add(editor);
+      }
       this.#linkNodeParams = null;
     }
   }

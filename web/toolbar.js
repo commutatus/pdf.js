@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { AnnotationEditorType, ColorPicker, noContextMenu } from "pdfjs-lib";
+import { AnnotationEditorType, noContextMenu } from "pdfjs-lib";
 import {
   DEFAULT_SCALE,
   DEFAULT_SCALE_VALUE,
@@ -160,27 +160,7 @@ class Toolbar {
     // Bind the event listeners for click and various other actions.
     this.#bindListeners(buttons);
 
-    if (options.editorHighlightColorPicker) {
-      eventBus._on(
-        "annotationeditoruimanager",
-        ({ uiManager }) => {
-          this.#setAnnotationEditorUIManager(
-            uiManager,
-            options.editorHighlightColorPicker
-          );
-        },
-        // Once the color picker has been added, we don't want to add it again.
-        { once: true }
-      );
-    }
-
     this.reset();
-  }
-
-  #setAnnotationEditorUIManager(uiManager, parentContainer) {
-    const colorPicker = new ColorPicker({ uiManager });
-    uiManager.setMainHighlightColorPicker(colorPicker);
-    parentContainer.append(colorPicker.renderMainDropdown());
   }
 
   setPageNumber(pageNumber, pageLabel) {

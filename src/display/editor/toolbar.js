@@ -13,34 +13,25 @@
  * limitations under the License.
  */
 
-import { noContextMenu } from "../display_utils.js";
-
 class EditorToolbar {
   #toolbar = null;
 
-  #colorPicker = null;
-
   #editor;
 
-  #buttons = null;
+  id = null;
 
   constructor(editor) {
     this.#editor = editor;
+    this.id = `${this.#editor.id}-toolbar`;
   }
 
-  render() {
+  render(editorProps = {}) {
     const editToolbar = (this.#toolbar = document.createElement("div"));
     editToolbar.className = "editToolbar";
-    editToolbar.addEventListener("contextmenu", noContextMenu);
-    editToolbar.addEventListener("pointerdown", EditorToolbar.#pointerDown);
-
-    const buttons = (this.#buttons = document.createElement("div"));
-    buttons.className = "buttons";
-    editToolbar.append(buttons);
 
     const position = this.#editor.toolbarPosition;
+    const { style } = editToolbar;
     if (position) {
-      const { style } = editToolbar;
       const x =
         this.#editor._uiManager.direction === "ltr"
           ? 1 - position[0]
@@ -49,88 +40,44 @@ class EditorToolbar {
       style.top = `calc(${
         100 * position[1]
       }% + var(--editor-toolbar-vert-offset))`;
+    } else {
+      const rectangleDropdownWidth = 122;
+      style.insetInlineEnd = `calc(50% - ${Math.floor(rectangleDropdownWidth / 2)}px)`;
+      style.top = "calc(100% + var(--editor-toolbar-vert-offset))";
     }
 
-    this.#addDeleteButton();
+    const props = {
+      onDelete: this.#onDelete.bind(this),
+      ...editorProps,
+    };
+    this.#editor._uiManager.addEditToolbarToEditor({
+      id: this.id,
+      editor: this.#editor,
+      props,
+      div: this.#toolbar,
+    });
 
     return editToolbar;
   }
 
-  static #pointerDown(e) {
-    e.stopPropagation();
-  }
-
-  #focusIn(e) {
-    this.#editor._focusEventsAllowed = false;
-    e.preventDefault();
-    e.stopPropagation();
-  }
-
-  #focusOut(e) {
-    this.#editor._focusEventsAllowed = true;
-    e.preventDefault();
-    e.stopPropagation();
-  }
-
-  #addListenersToElement(element) {
-    // If we're clicking on a button with the keyboard or with
-    // the mouse, we don't want to trigger any focus events on
-    // the editor.
-    element.addEventListener("focusin", this.#focusIn.bind(this), {
-      capture: true,
-    });
-    element.addEventListener("focusout", this.#focusOut.bind(this), {
-      capture: true,
-    });
-    element.addEventListener("contextmenu", noContextMenu);
-  }
-
   hide() {
     this.#toolbar.classList.add("hidden");
-    this.#colorPicker?.hideDropdown();
   }
 
   show() {
     this.#toolbar.classList.remove("hidden");
   }
 
-  #addDeleteButton() {
-    const button = document.createElement("button");
-    button.className = "delete";
-    button.tabIndex = 0;
-    button.setAttribute(
-      "data-l10n-id",
-      `pdfjs-editor-remove-${this.#editor.editorType}-button`
-    );
-    this.#addListenersToElement(button);
-    button.addEventListener("click", e => {
-      this.#editor._uiManager.delete();
-    });
-    this.#buttons.append(button);
-  }
-
-  get #divider() {
-    const divider = document.createElement("div");
-    divider.className = "divider";
-    return divider;
-  }
-
-  addAltTextButton(button) {
-    this.#addListenersToElement(button);
-    this.#buttons.prepend(button, this.#divider);
-  }
-
-  addColorPicker(colorPicker) {
-    this.#colorPicker = colorPicker;
-    const button = colorPicker.renderButton();
-    this.#addListenersToElement(button);
-    this.#buttons.prepend(button, this.#divider);
+  #onDelete() {
+    this.#editor._uiManager.delete();
   }
 
   remove() {
+    this.#editor._uiManager.removeExternalElement({
+      id: this.id,
+    });
+
     this.#toolbar.remove();
-    this.#colorPicker?.destroy();
-    this.#colorPicker = null;
   }
 }
 

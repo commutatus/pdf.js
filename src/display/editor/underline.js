@@ -20,7 +20,6 @@ import {
 } from "../../shared/util.js";
 import { AnnotationEditor } from "./editor.js";
 import { bindEvents } from "./tools.js";
-import { ColorPicker } from "./color_picker.js";
 import { Outliner } from "./outliner.js";
 
 /**
@@ -31,8 +30,6 @@ class UnderlineEditor extends AnnotationEditor {
 
   #clipPathId = null;
 
-  #colorPicker = null;
-
   #highlightDiv = null;
 
   #highlightUnderlines = null;
@@ -42,6 +39,8 @@ class UnderlineEditor extends AnnotationEditor {
   #lastPoint = null;
 
   #opacity;
+
+  selectedText = "";
 
   static _defaultColor = null;
 
@@ -61,6 +60,7 @@ class UnderlineEditor extends AnnotationEditor {
     this.#opacity = params.opacity || UnderlineEditor._defaultOpacity;
     this.#boxes = params.boxes || null;
     this._isDraggable = false;
+    this.selectedText = params.text || "";
 
     if (this.#boxes) {
       this.#createUnderlines();
@@ -162,7 +162,6 @@ class UnderlineEditor extends AnnotationEditor {
           color,
           UnderlineEditor._editorType
         );
-        this.#colorPicker?.updateColor(color);
       },
       undo: () => {
         this.color = savedColor;
@@ -171,7 +170,6 @@ class UnderlineEditor extends AnnotationEditor {
           savedColor,
           UnderlineEditor._editorType
         );
-        this.#colorPicker?.updateColor(savedColor);
       },
       mustExec: true,
       type: AnnotationEditorParamsType.HIGHLIGHT_COLOR,
@@ -182,14 +180,16 @@ class UnderlineEditor extends AnnotationEditor {
 
   /** @inheritdoc */
   async addEditToolbar() {
-    const toolbar = await super.addEditToolbar();
+    const props = {
+      onColorSelect: this.#updateColor.bind(this),
+      initialColor: this.color,
+    };
+
+    const toolbar = await super.addEditToolbar(props);
     if (!toolbar) {
       return null;
     }
-    if (this._uiManager.highlightColors) {
-      this.#colorPicker = new ColorPicker({ editor: this });
-      toolbar.addColorPicker(this.#colorPicker);
-    }
+
     return toolbar;
   }
 

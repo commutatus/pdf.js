@@ -527,8 +527,6 @@ class AnnotationEditorUIManager {
 
   #allLayers = new Map();
 
-  #altTextManager = null;
-
   #annotationStorage = null;
 
   #commandManager = new CommandManager();
@@ -556,8 +554,6 @@ class AnnotationEditorUIManager {
   #isWaiting = false;
 
   #lastActiveElement = null;
-
-  #mainHighlightColorPicker = null;
 
   #mode = AnnotationEditorType.NONE;
 
@@ -668,7 +664,9 @@ class AnnotationEditorUIManager {
             "shift+Delete",
             "mac+Delete",
           ],
-          proto.delete,
+          () => {
+            proto.delete(true);
+          },
           { checker: textInputChecker },
         ],
         [
@@ -742,7 +740,6 @@ class AnnotationEditorUIManager {
   constructor(
     container,
     viewer,
-    altTextManager,
     eventBus,
     pdfDocument,
     pageColors,
@@ -750,7 +747,6 @@ class AnnotationEditorUIManager {
   ) {
     this.#container = container;
     this.#viewer = viewer;
-    this.#altTextManager = altTextManager;
     this._eventBus = eventBus;
     this._eventBus._on("editingaction", this.#boundOnEditingAction);
     this._eventBus._on("pagechanging", this.#boundOnPageChanging);
@@ -782,7 +778,6 @@ class AnnotationEditorUIManager {
     this.#activeEditor = null;
     this.#selectedEditors.clear();
     this.#commandManager.destroy();
-    this.#altTextManager?.destroy();
     if (this.#focusMainContainerTimeoutId) {
       clearTimeout(this.#focusMainContainerTimeoutId);
       this.#focusMainContainerTimeoutId = null;
@@ -826,14 +821,6 @@ class AnnotationEditorUIManager {
           )
         : null
     );
-  }
-
-  setMainHighlightColorPicker(colorPicker) {
-    this.#mainHighlightColorPicker = colorPicker;
-  }
-
-  editAltText(editor) {
-    this.#altTextManager?.editAltText(this, editor);
   }
 
   onPageChanging({ pageNumber }) {
@@ -1400,9 +1387,6 @@ class AnnotationEditorUIManager {
       case AnnotationEditorParamsType.CREATE:
         this.currentLayer.addNewEditor();
         return;
-      case AnnotationEditorParamsType.HIGHLIGHT_COLOR:
-        this.#mainHighlightColorPicker?.updateColor(value);
-        break;
     }
 
     for (const editor of this.#selectedEditors) {
@@ -1412,13 +1396,6 @@ class AnnotationEditorUIManager {
     for (const editorType of this.#editorTypes) {
       editorType.updateDefaultParams(type, value);
     }
-  }
-
-  updateGlobalParams(editor, mapping) {
-    this._eventBus.dispatch("com_updateglobalparams", {
-      source: editor,
-      params: mapping,
-    });
   }
 
   enableWaiting(mustWait = false) {
@@ -1765,7 +1742,7 @@ class AnnotationEditorUIManager {
   /**
    * Delete the current editor or all.
    */
-  delete() {
+  delete(isKeyboardEvent = false) {
     this.commitOrRemove();
     if (!this.hasSelection) {
       return;
@@ -1774,7 +1751,15 @@ class AnnotationEditorUIManager {
     const editors = [...this.#selectedEditors];
     const cmd = () => {
       for (const editor of editors) {
-        if (editor.name === "linkNodeEditor") {
+        // Disable accidental keyboard delete event for text notes
+        if (
+          isKeyboardEvent &&
+          editor.constructor._editorType === AnnotationEditorType.TEXT
+        ) {
+          continue;
+        }
+
+        if (editor.constructor._editorType === AnnotationEditorType.LINK_NODE) {
           let visibleEditorDeleted = false;
           this.#visibleLinkNodes = this.#visibleLinkNodes.filter(
             linkNodeEditor => {
@@ -1817,6 +1802,31 @@ class AnnotationEditorUIManager {
 
   hasSomethingToControl() {
     return this.#activeEditor || this.hasSelection;
+  }
+
+  addEditToolbarToEditor({ id, editor, props, div }) {
+    this._eventBus.dispatch("com_addToolbar", {
+      id,
+      editorType: editor.constructor._editorType,
+      type:
+        editor.name === "tempHighlightEditor" ? "actionMenuToolbar" : "toolbar",
+      props,
+      div,
+    });
+  }
+
+  addStickyNoteMenuButton({ id, editor, props, div }) {
+    this._eventBus.dispatch("com_addStickyNoteMenuButton", {
+      id,
+      editorType: editor.constructor._editorType,
+      type: "stickyNoteMenuButton",
+      props,
+      div,
+    });
+  }
+
+  removeExternalElement(args) {
+    this._eventBus.dispatch("com_externalElementRemoved", args);
   }
 
   /**

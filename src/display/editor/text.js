@@ -27,7 +27,6 @@ import {
   bindEvents,
   KeyboardManager,
 } from "./tools.js";
-import { copyIconSVG, hideIconSVG } from "../../images/svgIcons.js";
 import { AnnotationEditor } from "./editor.js";
 import { FreeTextAnnotationElement } from "../annotation_layer.js";
 
@@ -42,8 +41,6 @@ class TextEditor extends AnnotationEditor {
   #boundEditorDivFocus = this.editorDivFocus.bind(this);
 
   #boundEditorDivKeydown = this.editorDivKeydown.bind(this);
-
-  #boundCopyContentsToClipboard = this.copyContentsToClipboard.bind(this);
 
   #boundToggleNoteAppearance = this.toggleNoteAppearance.bind(this);
 
@@ -141,6 +138,7 @@ class TextEditor extends AnnotationEditor {
       params.color ||
       TextEditor._defaultColor ||
       AnnotationEditor._defaultLineColor;
+    this.disableToolbar = true;
   }
 
   /** @inheritdoc */
@@ -281,11 +279,15 @@ class TextEditor extends AnnotationEditor {
     this.isEditing = false;
   }
 
+  #setSelectedOnHover = () => {
+    // TODO: Fix: The selected element becomes the text layer and
+    // keyboard manager gets confused
+    this.parent.setSelected(this);
+    this._isDraggable = true;
+  };
+
   setupOverlayDragEvents() {
-    this.overlayDiv.addEventListener("mouseover", () => {
-      this.parent.setSelected(this);
-      this._isDraggable = true;
-    });
+    this.overlayDiv.addEventListener("mouseover", this.#setSelectedOnHover);
 
     this.overlayDiv.addEventListener("mouseout", () => {
       this._isDraggable = false;
@@ -339,6 +341,7 @@ class TextEditor extends AnnotationEditor {
     if (this.parent) {
       this.parent.setEditingState(true);
     }
+    this.#removeMenuButton();
     super.remove();
   }
 
@@ -489,12 +492,6 @@ class TextEditor extends AnnotationEditor {
     this.editorDiv.setAttribute("aria-multiline", true);
   }
 
-  copyContentsToClipboard() {
-    const text = this.#extractText();
-
-    this.copyToClipboard(text);
-  }
-
   toggleNoteAppearance(emitEvent = true) {
     const toggleCommand = () => {
       this.#isCollapsed = !this.#isCollapsed;
@@ -528,54 +525,41 @@ class TextEditor extends AnnotationEditor {
 
   createActionBar() {
     const actionBar = document.createElement("div");
-    const actionButton = document.createElement("div");
-    const dropdownMenu = document.createElement("div");
-    const copyButton = document.createElement("div");
-    const hideButton = document.createElement("div");
-
-    copyButton.innerHTML = `${copyIconSVG} Copy Text`;
-    hideButton.innerHTML = `${hideIconSVG} Hide Sticky Note`;
-    dropdownMenu.append(copyButton);
-    copyButton.className = "sticky-note-dropdown-option";
-
-    copyButton.addEventListener("click", () => {
-      this.#boundCopyContentsToClipboard();
-      dropdownMenu.classList.toggle("show");
-    });
-
-    hideButton.addEventListener("click", () => {
-      dropdownMenu.classList.toggle("show");
-      this.#boundToggleNoteAppearance();
-    });
-
-    dropdownMenu.append(hideButton);
-    hideButton.className = "sticky-note-dropdown-option";
-    dropdownMenu.className = "sticky-note-actions-dropdown";
-
-    // Show dropdown on click
-    actionButton.addEventListener("click", () => {
-      dropdownMenu.classList.toggle("show");
-    });
-
-    // Hide dropdown on clicking outside
-    document.addEventListener("click", event => {
-      if (
-        !dropdownMenu.contains(event.target) &&
-        !actionButton.contains(event.target)
-      ) {
-        dropdownMenu.classList.remove("show");
-      }
-    });
-
-    actionButton.innerHTML =
-      '<svg viewBox="64 64 896 896" focusable="false" data-icon="ellipsis" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M176 511a56 56 0 10112 0 56 56 0 10-112 0zm280 0a56 56 0 10112 0 56 56 0 10-112 0zm280 0a56 56 0 10112 0 56 56 0 10-112 0z"></path></svg>';
-    actionButton.className = "sticky-note-action-button";
-    actionBar.append(dropdownMenu);
-
-    actionBar.append(actionButton);
     actionBar.className = "sticky-note-action-bar";
 
+    const onHideNote = () => {
+      this.#boundToggleNoteAppearance();
+    };
+
+    const onDelete = () => {
+      this._uiManager.delete();
+    };
+
+    const getText = () => {
+      return this.#extractText();
+    };
+
+    const props = {
+      getText,
+      onHideNote,
+      onDelete,
+      onOpen: this.#setSelectedOnHover,
+    };
+
+    this._uiManager.addStickyNoteMenuButton({
+      id: `${this.id}-stickyNoteMenuButton`,
+      editor: this,
+      props,
+      div: actionBar,
+    });
+
     return actionBar;
+  }
+
+  #removeMenuButton() {
+    this._uiManager.removeExternalElement({
+      id: `${this.id}-stickyNoteMenuButton`,
+    });
   }
 
   /** @inheritdoc */
