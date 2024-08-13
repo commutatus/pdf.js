@@ -865,6 +865,7 @@ class AnnotationEditorLayer {
    * @param {PointerEvent} event
    */
   pointerUpAfterSelection(event) {
+    this.#uiManager.unselectAll();
     const selection = document.getSelection();
     if (selection.rangeCount === 0) {
       this.removeTempHighlight();
