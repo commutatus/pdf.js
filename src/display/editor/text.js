@@ -495,10 +495,45 @@ class TextEditor extends AnnotationEditor {
   toggleNoteAppearance(emitEvent = true) {
     const toggleCommand = () => {
       this.#isCollapsed = !this.#isCollapsed;
-      // TODO: Adjust width and height as collapsed state changes
-      this.fixAndSetPosition();
+
       this.#smallNoteDiv.classList.toggle("show");
       this.#largeNoteDiv.classList.toggle("show");
+
+      /**
+       * Give user illusion that top right corner is fixed when internally
+       * it's the top left corner that is fixed
+       *
+       * When sticky note is closed: Move small note in the right direction
+       * The user's mouse will have to travel the shortest distance to interact
+       * with the collapsed note
+       *
+       * When sticky note is opened: Move large note in the left left direction
+       * The user's mouse will have to travel the shortest distance to interact
+       * with the actions menu of the opened note
+       *
+       */
+
+      const [parentWidth, parentHeight] = this.parentDimensions;
+
+      // TODO: Make sizes dynamic after resizing is added
+      let realWidthInPx = 268,
+        realHeightInPx = 172;
+      if (this.#isCollapsed) {
+        realHeightInPx = realWidthInPx = 25;
+      }
+      const newWidth = realWidthInPx / parentWidth;
+      const newHeight = realHeightInPx / parentHeight;
+
+      if (this.#isCollapsed) {
+        this.x += this.width - newWidth;
+      } else {
+        this.x -= newWidth - this.width;
+      }
+
+      this.width = newWidth;
+      this.height = newHeight;
+
+      this.fixAndSetPosition();
     };
 
     if (emitEvent) {
