@@ -459,8 +459,9 @@ class AnnotationEditor {
 
   drag(tx, ty) {
     const [parentWidth, parentHeight] = this.parentDimensions;
-    this.x += tx / parentWidth;
-    this.y += ty / parentHeight;
+    const scalingFactor = window.devicePixelRatio;
+    this.x += tx / scalingFactor / parentWidth;
+    this.y += ty / scalingFactor / parentHeight;
     if (this.parent && (this.x < 0 || this.x > 1 || this.y < 0 || this.y > 1)) {
       // It's possible to not have a parent: for example, when the user is
       // dragging all the selected editors but this one on a page which has been
