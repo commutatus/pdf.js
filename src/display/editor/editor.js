@@ -86,6 +86,8 @@ class AnnotationEditor {
 
   #zIndex = AnnotationEditor._zIndex++;
 
+  #dragScalingFactor = 1;
+
   selectedText = null;
 
   apiId = null;
@@ -457,14 +459,20 @@ class AnnotationEditor {
     this.div.scrollIntoView({ block: "nearest" });
   }
 
+  #setDragScalingFactor() {
+    const currentZoomLevel = window.outerWidth / window.innerWidth;
+    const defaultDevicePixelRatio = +(
+      window.devicePixelRatio / currentZoomLevel
+    ).toFixed(2);
+
+    this.#dragScalingFactor = defaultDevicePixelRatio / window.devicePixelRatio;
+  }
+
   drag(tx, ty) {
     const [parentWidth, parentHeight] = this.parentDimensions;
-    const scalingFactor =
-      window.devicePixelRatio < 1
-        ? 1 / window.devicePixelRatio
-        : window.devicePixelRatio;
-    this.x += (tx * scalingFactor) / parentWidth;
-    this.y += (ty * scalingFactor) / parentHeight;
+    this.x += (tx * this.#dragScalingFactor) / parentWidth;
+    this.y += (ty * this.#dragScalingFactor) / parentHeight;
+
     if (this.parent && (this.x < 0 || this.x > 1 || this.y < 0 || this.y > 1)) {
       // It's possible to not have a parent: for example, when the user is
       // dragging all the selected editors but this one on a page which has been
@@ -1007,6 +1015,7 @@ class AnnotationEditor {
 
     let pointerMoveOptions, pointerMoveCallback;
     if (isSelected) {
+      this.#setDragScalingFactor();
       pointerMoveOptions = { passive: true, capture: true };
       pointerMoveCallback = e => {
         this._wasDragged = true;
