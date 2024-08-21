@@ -23,6 +23,7 @@ Feel free to stop by our [Matrix room](https://chat.mozilla.org/#/room/#pdfjs:mo
 
 ### Online demo
 
+
 Please note that the "Modern browsers" version assumes native support for the
 latest JavaScript features; please also see [this wiki page](https://github.com/mozilla/pdf.js/wiki/Frequently-Asked-Questions#faq-support).
 
