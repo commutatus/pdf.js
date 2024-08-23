@@ -54,13 +54,7 @@ class LinkNodeEditor extends AnnotationEditor {
   }
 
   #createOutlines() {
-    const outliner = new Outliner(
-      this.#boxes,
-      /* borderWidth = */ 0.001,
-      0,
-      true,
-      this
-    );
+    const outliner = new Outliner(this.#boxes, /* borderWidth = */ 0.001);
     this.#highlightOutlines = outliner.getUnderlinesAndStrikeouts();
     ({
       x: this.x,
