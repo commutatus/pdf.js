@@ -939,6 +939,20 @@ class AnnotationEditorUIManager {
     this.#sendUpdatedNodeList(targetId);
   }
 
+  getDivForEditor(apiId) {
+    if (!apiId) {
+      return null;
+    }
+
+    for (const editor of this.#allEditors.values()) {
+      if (editor.apiId === apiId) {
+        return editor.div;
+      }
+    }
+
+    return null;
+  }
+
   /**
    * Add an editor in the annotation storage.
    * @param {AnnotationEditor} editor
