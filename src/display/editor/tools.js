@@ -1675,7 +1675,10 @@ class AnnotationEditorUIManager {
 
     if (editor.name === "linkNodeEditor") {
       // Link nodes cannot be updated, only added or removed
-      if (!editor?.div?.classList?.contains?.("hidden")) {
+      if (
+        this.linkNodeTargetId &&
+        `${editor.targetId}` === `${this.linkNodeTargetId}`
+      ) {
         this.#visibleLinkNodes.push(editor);
         this.#dispatchVisibleLinkNodeDivs();
       }
