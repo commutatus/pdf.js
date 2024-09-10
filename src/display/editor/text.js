@@ -58,6 +58,8 @@ class TextEditor extends AnnotationEditor {
 
   #largeNoteDiv = null;
 
+  #actionBarDiv = null;
+
   static _defaultColor = "#98CDF6";
 
   static get _keyboardManager() {
@@ -307,6 +309,8 @@ class TextEditor extends AnnotationEditor {
 
   /** @inheritdoc */
   onceAdded() {
+    this.#addMenuButton();
+
     if (this.loadedThroughApi) {
       if (this.#apiData.collapsed && !this.#isCollapsed) {
         // We don't want to send an event when we are loading the
@@ -562,6 +566,11 @@ class TextEditor extends AnnotationEditor {
     const actionBar = document.createElement("div");
     actionBar.className = "sticky-note-action-bar";
 
+    this.#actionBarDiv = actionBar;
+    return actionBar;
+  }
+
+  #addMenuButton() {
     const onHideNote = () => {
       this.#boundToggleNoteAppearance();
     };
@@ -585,10 +594,8 @@ class TextEditor extends AnnotationEditor {
       id: `${this.id}-stickyNoteMenuButton`,
       editor: this,
       props,
-      div: actionBar,
+      div: this.#actionBarDiv,
     });
-
-    return actionBar;
   }
 
   #removeMenuButton() {

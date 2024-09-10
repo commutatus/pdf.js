@@ -593,7 +593,10 @@ class AnnotationEditorLayer {
       editor.remove();
     };
 
-    this.addCommands({ cmd, undo, mustExec: false }, editor);
+    this.addCommands(
+      { cmd, undo, mustExec: false, removesOnUndo: true },
+      editor
+    );
   }
 
   /**

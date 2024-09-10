@@ -597,6 +597,8 @@ class AnnotationEditorUIManager {
 
   #viewer = null;
 
+  #isKeydownEventBound = false;
+
   linkNodeTargetId = null;
 
   static TRANSLATE_SMALL = 1; // page units.
@@ -760,6 +762,7 @@ class AnnotationEditorUIManager {
       realScale: PixelsPerInch.PDF_TO_CSS_UNITS,
       rotation: 0,
     };
+    this.#addKeyboardManager();
   }
 
   destroy() {
@@ -1012,13 +1015,18 @@ class AnnotationEditorUIManager {
   }
 
   #addKeyboardManager() {
+    if (this.#isKeydownEventBound) {
+      return;
+    }
     // The keyboard events are caught at the container level in order to be able
     // to execute some callbacks even if the current page doesn't have focus.
     window.addEventListener("keydown", this.#boundKeydown);
+    this.#isKeydownEventBound = true;
   }
 
   #removeKeyboardManager() {
     window.removeEventListener("keydown", this.#boundKeydown);
+    this.#isKeydownEventBound = false;
   }
 
   #addCopyPasteListeners() {
@@ -1262,7 +1270,6 @@ class AnnotationEditorUIManager {
       });
     } else {
       this.#removeFocusManager();
-      this.#removeKeyboardManager();
       this.#removeCopyPasteListeners();
       this.#dispatchUpdateStates({
         isEditing: false,
@@ -1703,6 +1710,14 @@ class AnnotationEditorUIManager {
       }
     };
 
+    const signalEditorDeleted = () => {
+      if (Array.isArray(editors)) {
+        editors.forEach(editor => this.#signalEditorDeleted(editor));
+      } else {
+        this.#signalEditorDeleted(editors);
+      }
+    };
+
     if (params.cmd) {
       const originalFunction = params.cmd;
       params.cmd = () => {
@@ -1715,7 +1730,11 @@ class AnnotationEditorUIManager {
       const originalFunction = params.undo;
       params.undo = () => {
         originalFunction();
-        signalChange();
+        if (params.removesOnUndo) {
+          signalEditorDeleted();
+        } else {
+          signalChange();
+        }
       };
     }
 
@@ -1754,6 +1773,12 @@ class AnnotationEditorUIManager {
     }
 
     return false;
+  }
+
+  #signalEditorDeleted(editor) {
+    this._eventBus.dispatch("com_annotationdeleted", {
+      id: editor.apiId,
+    });
   }
 
   /**
@@ -1796,9 +1821,7 @@ class AnnotationEditorUIManager {
 
           this.#sendUpdatedNodeList(editor.targetId);
         } else {
-          this._eventBus.dispatch("com_annotationdeleted", {
-            id: editor.apiId,
-          });
+          this.#signalEditorDeleted(editor);
         }
         editor.remove();
       }
@@ -1809,7 +1832,7 @@ class AnnotationEditorUIManager {
       }
     };
 
-    this.addCommands({ cmd, undo, mustExec: true });
+    this.addCommands({ cmd, undo, mustExec: true }, editors);
   }
 
   commitOrRemove() {

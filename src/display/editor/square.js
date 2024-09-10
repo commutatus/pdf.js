@@ -441,7 +441,7 @@ class SquareEditor extends AnnotationEditor {
     };
 
     cmd();
-    return { cmd, undo };
+    return { cmd, undo, removesOnUndo: !oldRect };
   }
 
   #updateRect() {
@@ -603,7 +603,10 @@ class SquareEditor extends AnnotationEditor {
       this.canvas.removeEventListener("contextmenu", noContextMenu);
     }, 10);
 
-    const { cmd, undo } = this.#stopDrawing(event.offsetX, event.offsetY);
+    const { cmd, undo, removesOnUndo } = this.#stopDrawing(
+      event.offsetX,
+      event.offsetY
+    );
 
     this.addToAnnotationStorage();
 
@@ -614,7 +617,7 @@ class SquareEditor extends AnnotationEditor {
 
     // TODO: Commands are being added after commit to make sure the correct
     // getRect values get passed to the API. Find a better way to do it
-    this.addCommands({ cmd, undo, mustExec: false });
+    this.addCommands({ cmd, undo, mustExec: false, removesOnUndo });
   }
 
   /**
