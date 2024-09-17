@@ -54,6 +54,9 @@ class SquareEditor extends AnnotationEditor {
 
   #requestFrameCallback = null;
 
+  // TODO: Remove this workaround
+  parentScaleOnDeserialize = null;
+
   static _defaultColor = "#d1e821";
 
   static _defaultOpacity = 0.3;
@@ -312,7 +315,7 @@ class SquareEditor extends AnnotationEditor {
 
   /** @inheritdoc */
   onceAdded() {
-    if (this.loadedThroughApi) {
+    if (this.wasAddedFromApi) {
       // If this is not set to true, fitToContent will not resize the canvas
       // and drag events will not work
       this.#disableEditing = true;
@@ -840,30 +843,42 @@ class SquareEditor extends AnnotationEditor {
     );
   }
 
-  #getSerializedRect() {
-    const [parentWidth, parentHeight] = this.parentDimensions;
-
-    const { startX, startY, endX, endY } = this.rect;
-
-    return {
-      startX: (startX || 0) / parentWidth,
-      startY: (startY || 0) / parentHeight,
-      endX: (endX || 0) / parentWidth,
-      endY: (endY || 0) / parentHeight,
-    };
+  #serializeZoomedValue(zoomedValue) {
+    const noZoomValue = (
+      zoomedValue / (this.parentScaleOnDeserialize || this.parentScale)
+    ).toFixed(8);
+    return noZoomValue;
   }
 
-  #getDeserializedRect(serializedRect) {
-    const [parentWidth, parentHeight] = this.parentDimensions;
+  deserializeNoZoomDimension(noZoomValue) {
+    const zoomedValue = noZoomValue * this.parentScale;
+    return zoomedValue;
+  }
 
+  #getSerializedRect() {
+    const { startX, startY, endX, endY } = this.rect;
+
+    const result = {
+      startX: this.#serializeZoomedValue(startX),
+      startY: this.#serializeZoomedValue(startY),
+      endX: this.#serializeZoomedValue(endX),
+      endY: this.#serializeZoomedValue(endY),
+    };
+
+    return result;
+  }
+
+  getDeserializedRect(serializedRect) {
     const { startX, startY, endX, endY } = serializedRect;
 
-    return {
-      startX: startX ? startX * parentWidth : 0,
-      startY: startY ? startY * parentHeight : 0,
-      endX: endX ? endX * parentWidth : 0,
-      endY: endY ? endY * parentHeight : 0,
+    const result = {
+      startX: this.deserializeNoZoomDimension(startX || 0),
+      startY: this.deserializeNoZoomDimension(startY || 0),
+      endX: this.deserializeNoZoomDimension(endX || 0),
+      endY: this.deserializeNoZoomDimension(endY || 0),
     };
+
+    return result;
   }
 
   // TODO: Verify deserialize implementation
@@ -924,8 +939,8 @@ class SquareEditor extends AnnotationEditor {
       rect,
       drawRect: this.#getSerializedRect(),
       rotation: this.rotation,
-      translationX: this.translationX,
-      translationY: this.translationY,
+      translationX: this.#serializeZoomedValue(this.translationX),
+      translationY: this.#serializeZoomedValue(this.translationY),
     };
   }
 
@@ -934,11 +949,12 @@ class SquareEditor extends AnnotationEditor {
 
     editor.color = data.color;
     editor.opacity = data.opacity || null;
-    editor.rect = editor.#getDeserializedRect(data.drawRect);
-    editor.translationX = data.translationX;
-    editor.translationY = data.translationY;
+    editor.rect = editor.getDeserializedRect(data.drawRect);
+    editor.translationX = editor.deserializeNoZoomDimension(data.translationX);
+    editor.translationY = editor.deserializeNoZoomDimension(data.translationY);
 
-    editor.loadedThroughApi = true;
+    editor.wasAddedFromApi = true;
+    editor.parentScaleOnDeserialize = this.parentScale;
 
     return editor;
   }

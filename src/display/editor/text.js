@@ -311,7 +311,7 @@ class TextEditor extends AnnotationEditor {
   onceAdded() {
     this.#addMenuButton();
 
-    if (this.loadedThroughApi) {
+    if (this.wasAddedFromApi) {
       if (this.#apiData.collapsed && !this.#isCollapsed) {
         // We don't want to send an event when we are loading the
         // annotation from the API
@@ -686,7 +686,7 @@ class TextEditor extends AnnotationEditor {
             break;
         }
         this.setAt(posX * parentWidth, posY * parentHeight, tx, ty);
-      } else if (this.loadedThroughApi) {
+      } else if (this.wasAddedFromApi) {
         // TODO: Confirm if this is the correct way to deal with shifts
         this.setAt(baseX * parentWidth, baseY * parentHeight, 0, 0);
       } else {
@@ -842,7 +842,7 @@ class TextEditor extends AnnotationEditor {
     editor.#color = data.color;
     editor.#content = data.text || null;
 
-    editor.loadedThroughApi = true;
+    editor.wasAddedFromApi = true;
     editor.#apiData = data;
 
     return editor;
