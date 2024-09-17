@@ -60,7 +60,7 @@ class TextEditor extends AnnotationEditor {
 
   #actionBarDiv = null;
 
-  static _defaultColor = "#98CDF6";
+  static _defaultColor = "#97CCF6";
 
   static get _keyboardManager() {
     const proto = TextEditor.prototype;

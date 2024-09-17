@@ -60,7 +60,7 @@ class HighlightEditor extends AnnotationEditor {
 
   constructor(params) {
     super({ name: "highlightEditor", ...params });
-    HighlightEditor._defaultColor ||= "#fff066";
+    HighlightEditor._defaultColor ||= "#F7CE46";
     this.color = params.color || HighlightEditor._defaultColor;
     this.#opacity = params.opacity || HighlightEditor._defaultOpacity;
     this.#boxes = params.boxes || null;

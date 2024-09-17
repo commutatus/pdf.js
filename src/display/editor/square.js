@@ -57,7 +57,7 @@ class SquareEditor extends AnnotationEditor {
   // TODO: Remove this workaround
   parentScaleOnDeserialize = null;
 
-  static _defaultColor = "#d1e821";
+  static _defaultColor = "#F7CE46";
 
   static _defaultOpacity = 0.3;
 
