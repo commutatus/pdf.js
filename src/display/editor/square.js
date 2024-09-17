@@ -54,9 +54,6 @@ class SquareEditor extends AnnotationEditor {
 
   #requestFrameCallback = null;
 
-  // TODO: Remove this workaround
-  parentScaleOnDeserialize = null;
-
   static _defaultColor = "#F7CE46";
 
   static _defaultOpacity = 0.3;
@@ -843,29 +840,19 @@ class SquareEditor extends AnnotationEditor {
     );
   }
 
-  #serializeZoomedValue(zoomedValue) {
-    const noZoomValue = (
-      zoomedValue / (this.parentScaleOnDeserialize || this.parentScale)
-    ).toFixed(8);
-    return noZoomValue;
-  }
-
   deserializeNoZoomDimension(noZoomValue) {
     const zoomedValue = noZoomValue * this.parentScale;
     return zoomedValue;
   }
 
   #getSerializedRect() {
-    const { startX, startY, endX, endY } = this.rect;
+    const [pageWidth, pageHeight] = this.pageDimensions;
+    const startX = this.x * pageWidth;
+    const startY = this.y * pageHeight;
+    const width = this.width * pageWidth;
+    const height = this.height * pageHeight;
 
-    const result = {
-      startX: this.#serializeZoomedValue(startX),
-      startY: this.#serializeZoomedValue(startY),
-      endX: this.#serializeZoomedValue(endX),
-      endY: this.#serializeZoomedValue(endY),
-    };
-
-    return result;
+    return { startX, startY, endX: startX + width, endY: startY + height };
   }
 
   getDeserializedRect(serializedRect) {
@@ -881,7 +868,6 @@ class SquareEditor extends AnnotationEditor {
     return result;
   }
 
-  // TODO: Verify deserialize implementation
   /** @inheritdoc */
   static deserialize(data, parent, uiManager) {
     const editor = super.deserialize(data, parent, uiManager);
@@ -939,22 +925,21 @@ class SquareEditor extends AnnotationEditor {
       rect,
       drawRect: this.#getSerializedRect(),
       rotation: this.rotation,
-      translationX: this.#serializeZoomedValue(this.translationX),
-      translationY: this.#serializeZoomedValue(this.translationY),
     };
   }
 
   static deserializeFromJSON(data, parent, uiManager) {
     const editor = super.deserialize(data, parent, uiManager);
 
+    const rect = editor.getDeserializedRect(data.drawRect);
+
     editor.color = data.color;
     editor.opacity = data.opacity || null;
-    editor.rect = editor.getDeserializedRect(data.drawRect);
-    editor.translationX = editor.deserializeNoZoomDimension(data.translationX);
-    editor.translationY = editor.deserializeNoZoomDimension(data.translationY);
+    editor.rect = rect;
+    editor.translationX = -1 * rect.startX;
+    editor.translationY = -1 * rect.startY;
 
     editor.wasAddedFromApi = true;
-    editor.parentScaleOnDeserialize = this.parentScale;
 
     return editor;
   }
