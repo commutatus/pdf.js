@@ -1183,7 +1183,13 @@ class AnnotationEditorUIManager {
       );
 
       // Convert to editor
-      const editor = annotationEditorLayer.deserializeFromJSON(annotationData);
+      let editor;
+      try {
+        editor = annotationEditorLayer.deserializeFromJSON(annotationData);
+      } catch (e) {
+        console.error(e);
+        return;
+      }
 
       if (!editor) {
         return;
