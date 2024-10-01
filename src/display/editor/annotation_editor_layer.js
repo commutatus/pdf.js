@@ -1117,11 +1117,15 @@ class AnnotationEditorLayer {
    * Update the main editor.
    * @param {RenderEditorLayerOptions} parameters
    */
-  update({ viewport }) {
+  update({ viewport, textLayer }) {
     // Editors have their dimensions/positions in percent so to avoid any
     // issues (see #15582), we must commit the current one before changing
     // the viewport.
     this.#uiManager.commitOrRemove();
+
+    if (textLayer) {
+      this.#textLayer = textLayer;
+    }
 
     const oldRotation = this.viewport.rotation;
     const rotation = viewport.rotation;
