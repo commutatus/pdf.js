@@ -468,10 +468,19 @@ class AnnotationEditor {
     this.#dragScalingFactor = defaultDevicePixelRatio / window.devicePixelRatio;
   }
 
-  drag(tx, ty) {
+  #scaleDragDeltas(tx, ty) {
     const [parentWidth, parentHeight] = this.parentDimensions;
-    this.x += (tx * this.#dragScalingFactor) / parentWidth;
-    this.y += (ty * this.#dragScalingFactor) / parentHeight;
+
+    return [
+      (tx * this.#dragScalingFactor) / parentWidth,
+      (ty * this.#dragScalingFactor) / parentHeight,
+    ];
+  }
+
+  drag(tx, ty) {
+    const [deltaX, deltaY] = this.#scaleDragDeltas(tx, ty);
+    this.x += deltaX;
+    this.y += deltaY;
 
     if (this.parent && (this.x < 0 || this.x > 1 || this.y < 0 || this.y > 1)) {
       // It's possible to not have a parent: for example, when the user is
@@ -716,11 +725,11 @@ class AnnotationEditor {
       return;
     }
 
+    this.#setDragScalingFactor();
     const boundResizerPointermove = this.#resizerPointermove.bind(this, name);
     const savedDraggable = this._isDraggable;
     this._isDraggable = false;
     const pointerMoveOptions = { passive: true, capture: true };
-    this.parent.togglePointerEvents(false);
     window.addEventListener(
       "pointermove",
       boundResizerPointermove,
@@ -736,7 +745,6 @@ class AnnotationEditor {
       window.getComputedStyle(event.target).cursor;
 
     const pointerUpCallback = () => {
-      this.parent.togglePointerEvents(true);
       this._isDraggable = savedDraggable;
       window.removeEventListener("pointerup", pointerUpCallback);
       window.removeEventListener("blur", pointerUpCallback);
@@ -874,24 +882,21 @@ class AnnotationEditor {
       event.movementX,
       event.movementY
     );
-    [deltaX, deltaY] = invTransf(deltaX / parentWidth, deltaY / parentHeight);
+
+    [deltaX, deltaY] = this.#scaleDragDeltas(deltaX, deltaY);
+    [deltaX, deltaY] = invTransf(deltaX, deltaY);
 
     if (isDiagonal) {
-      const oldDiag = Math.hypot(savedWidth, savedHeight);
-      ratioX = ratioY = Math.max(
-        Math.min(
-          Math.hypot(
-            oppositePoint[0] - point[0] - deltaX,
-            oppositePoint[1] - point[1] - deltaY
-          ) / oldDiag,
-          // Avoid the editor to be larger than the page.
-          1 / savedWidth,
-          1 / savedHeight
-        ),
-        // Avoid the editor to be smaller than the minimum size.
-        minWidth / savedWidth,
-        minHeight / savedHeight
-      );
+      ratioX =
+        Math.max(
+          minWidth,
+          Math.min(1, Math.abs(oppositePoint[0] - point[0] - deltaX))
+        ) / savedWidth;
+      ratioY =
+        Math.max(
+          minHeight,
+          Math.min(1, Math.abs(oppositePoint[1] - point[1] - deltaY))
+        ) / savedHeight;
     } else if (isHorizontal) {
       ratioX =
         Math.max(

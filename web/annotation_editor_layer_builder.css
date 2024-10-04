@@ -123,6 +123,7 @@
 .textEditor, .squareEditor {
   /* Enables interaction even when annotation editor layer is disabled */
   pointer-events: auto;
+  box-sizing: content-box;
 }
 
 .textEditor {

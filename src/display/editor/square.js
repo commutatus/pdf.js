@@ -67,11 +67,12 @@ class SquareEditor extends AnnotationEditor {
     super({ ...params, name: "squareEditor" });
     this.color = params.color || null;
     this.opacity = params.opacity || null;
-    this.scaleFactor = 1;
+    this.scaleFactorW = 1;
+    this.scaleFactorH = 1;
     this.translationX = this.translationY = 0;
     this.x = 0;
     this.y = 0;
-    this._willKeepAspectRatio = true;
+    this._willKeepAspectRatio = false;
     this.rect = {};
   }
 
@@ -693,7 +694,6 @@ class SquareEditor extends AnnotationEditor {
     if (this.width) {
       // This editor was created in using copy (ctrl+c).
       const [parentWidth, parentHeight] = this.parentDimensions;
-      this.setAspectRatio(this.width * parentWidth, this.height * parentHeight);
       this.setAt(baseX * parentWidth, baseY * parentHeight, 0, 0);
       this.#isCanvasInitialized = true;
       this.#setCanvasDimensions();
@@ -762,9 +762,8 @@ class SquareEditor extends AnnotationEditor {
   }
 
   #setScaleFactor(width, height) {
-    const scaleFactorW = width / this.#baseWidth;
-    const scaleFactorH = height / this.#baseHeight;
-    this.scaleFactor = Math.min(scaleFactorW, scaleFactorH);
+    this.scaleFactorW = width / this.#baseWidth;
+    this.scaleFactorH = height / this.#baseHeight;
   }
 
   /**
@@ -772,12 +771,12 @@ class SquareEditor extends AnnotationEditor {
    */
   #scaleCanvasContent() {
     this.ctx.setTransform(
-      this.scaleFactor,
+      this.scaleFactorW,
       0,
       0,
-      this.scaleFactor,
-      this.translationX * this.scaleFactor,
-      this.translationY * this.scaleFactor
+      this.scaleFactorH,
+      this.translationX * this.scaleFactorW,
+      this.translationY * this.scaleFactorH
     );
   }
 
@@ -813,14 +812,12 @@ class SquareEditor extends AnnotationEditor {
     this.#baseWidth = Math.max(AnnotationEditor.MIN_SIZE, bbox[2] - bbox[0]);
     this.#baseHeight = Math.max(AnnotationEditor.MIN_SIZE, bbox[3] - bbox[1]);
 
-    const width = Math.ceil(this.#baseWidth * this.scaleFactor);
-    const height = Math.ceil(this.#baseHeight * this.scaleFactor);
+    const width = Math.ceil(this.#baseWidth * this.scaleFactorW);
+    const height = Math.ceil(this.#baseHeight * this.scaleFactorH);
 
     const [parentWidth, parentHeight] = this.parentDimensions;
     this.width = width / parentWidth;
     this.height = height / parentHeight;
-
-    this.setAspectRatio(width, height);
 
     const prevTranslationX = this.translationX;
     const prevTranslationY = this.translationY;
