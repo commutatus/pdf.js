@@ -471,6 +471,7 @@ class SquareEditor extends AnnotationEditor {
       this.#scaleCanvasContent();
       return;
     }
+    this.#hasSomethingNewToDraw = false;
     this.#setSquareStyles();
 
     const { canvas, ctx } = this;
